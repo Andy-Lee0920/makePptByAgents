@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>슬라이드</title>
+  <link rel="stylesheet" href="src/theme.css">
+  <script type="module" src="src/app.js"></script>
+</head>
+<body>
+  <main class="deck" aria-roledescription="슬라이드 덱"></main>
+
+  <nav class="nav" aria-label="슬라이드 내비게이션">
+    <button type="button" class="nav__button nav__button--prev" aria-label="이전 슬라이드" disabled>‹</button>
+    <button type="button" class="nav__button nav__button--next" aria-label="다음 슬라이드" disabled>›</button>
+  </nav>
+
+  <div class="progress" role="progressbar" aria-label="발표 진행률" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+    <div class="progress__bar"></div>
+  </div>
+
+  <div class="page-number" aria-live="polite"></div>
+</body>
+</html>

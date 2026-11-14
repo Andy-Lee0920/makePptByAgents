@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>직접 수집한 데이터 개요</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#eef0ea;--paper:#ffffff;--ink:#1d2420;--sub:#4f5a52;--muted:#8a938c;--line:#dfe3dc;--olive:#5b7a12;--olive-2:#8aa83f;--olive-3:#b9cf86;--olive-4:#dfe8c8;--olive-soft:rgba(91,122,18,.08);--slate:#5d6f86;--slate-soft:rgba(93,111,134,.08);--gray:#b3b9b2;}
+@media (prefers-color-scheme: dark){:root{color-scheme:dark;--bg:#101311;--paper:#1a1f1c;--ink:#eef1ec;--sub:#bcc4bd;--muted:#88918a;--line:#2f3631;--olive:#a7cf4a;--olive-2:#7e9c37;--olive-3:#566b27;--olive-4:#3a4720;--olive-soft:rgba(167,207,74,.08);--slate:#93a7c2;--slate-soft:rgba(147,167,194,.08);--gray:#5f6862;}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;color:var(--ink);overflow:hidden;word-break:keep-all}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{width:1920px;height:1080px;background:var(--paper);transform-origin:center;padding:72px 104px 52px;display:grid;grid-template-rows:auto 1fr auto;flex-shrink:0}
+.kicker{font-size:24px;color:var(--olive);font-weight:600;margin-bottom:18px}
+h1{font-size:54px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.body{display:grid;grid-template-columns:1fr 200px 1fr;margin-top:36px;min-height:0}
+.panel{border-radius:16px;padding:28px 40px 24px;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.oy{background:var(--olive-soft)}
+.amz{background:var(--slate-soft)}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:20px}
+.ph h2{font-size:32px;font-weight:700;letter-spacing:-.01em}
+.oy h2{color:var(--olive)}.amz h2{color:var(--slate)}
+.when{font-size:19px;color:var(--sub);white-space:nowrap}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);margin:18px 0 14px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.st{padding:10px 0}
+.st b{display:block;font-size:40px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.st span{font-size:17px;color:var(--sub)}
+.ct{font-size:19px;font-weight:600;margin-bottom:6px}
+.leg{display:flex;gap:18px;font-size:16px;color:var(--sub);margin-bottom:4px}
+.leg span{display:flex;align-items:center;gap:7px}.leg i{width:14px;height:14px;border-radius:3px;display:inline-block}
+.panel svg{width:100%;height:auto;display:block}
+.grid{stroke:var(--line);stroke-width:1}
+.tick{fill:var(--muted);font-size:17px}
+.val{fill:var(--ink);font-size:18px;font-weight:700}
+.lbl{fill:var(--sub);font-size:18px}
+.fields{margin-top:auto;padding-top:12px;font-size:16.5px;color:var(--sub);line-height:1.65}
+.fields b{color:var(--ink);font-weight:600}
+.link{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
+.link:before{content:"";position:absolute;left:0;right:0;top:50%;border-top:2px dashed var(--muted)}
+.key{position:relative;background:var(--paper);border:2px solid var(--ink);border-radius:999px;width:168px;height:168px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.key b{font-size:58px;font-weight:700;line-height:1;letter-spacing:-.03em}
+.key span{font-size:18px;color:var(--sub);margin-top:6px}
+.keyn{position:relative;background:var(--paper);font-size:16px;color:var(--sub);margin-top:14px;line-height:1.5;padding:0 6px}
+footer{font-size:17px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:18px;margin-top:26px}
+@media print{html,body{background:#fff;overflow:visible}.stage{position:static}.slide{transform:none!important}@page{size:1920px 1080px;margin:0}}
+</style>
+</head>
+<body>
+<div class="stage"><section class="slide" id="slide">
+<header>
+<div class="kicker">분석 데이터</div>
+<h1>국내 수상 기록과 미국 판매 순위를 직접 수집해 브랜드로 연결했다</h1>
+</header>
+<div class="body">
+<div class="panel oy">
+<div class="ph"><h2>올리브영 어워즈</h2><span class="when">2021–2025년, 5개년</span></div>
+<div class="stats">
+<div class="st"><b>735</b><span>수상 기록 (정제 후)</span></div>
+<div class="st"><b>247</b><span>수상 브랜드</span></div>
+<div class="st"><b>28→40</b><span>연간 카테고리 수</span></div>
+</div>
+<div class="ct">연도별 수상 건수와 순위 구성</div>
+<div class="leg"><span><i style="background:var(--olive)"></i>1위</span><span><i style="background:var(--olive-2)"></i>2·3위</span><span><i style="background:var(--olive-3)"></i>MD's Pick</span><span><i style="background:var(--olive-4)"></i>특별 부문</span></div>
+<svg viewBox="0 0 640 316" role="img" aria-label="연도별 올리브영 어워즈 수상 건수: 2021 134, 2022 128, 2023 145, 2024 139, 2025 170"><line x1="40" x2="640" y1="270.0" y2="270.0" class="grid"/><text x="30" y="275.0" class="tick" text-anchor="end">0</text><line x1="40" x2="640" y1="188.0" y2="188.0" class="grid"/><text x="30" y="193.0" class="tick" text-anchor="end">60</text><line x1="40" x2="640" y1="106.0" y2="106.0" class="grid"/><text x="30" y="111.0" class="tick" text-anchor="end">120</text><line x1="40" x2="640" y1="24.0" y2="24.0" class="grid"/><text x="30" y="29.0" class="tick" text-anchor="end">180</text><rect x="64.0" y="235.8" width="72" height="32.2" style="fill:var(--olive)"/><rect x="64.0" y="167.5" width="72" height="66.3" style="fill:var(--olive-2)"/><rect x="64.0" y="133.3" width="72" height="32.2" style="fill:var(--olive-3)"/><rect x="64.0" y="86.9" width="72" height="44.5" style="fill:var(--olive-4)"/><text x="100.0" y="76.9" class="val" text-anchor="middle">134</text><text x="100.0" y="300" class="tick" text-anchor="middle">2021</text><rect x="184.0" y="233.1" width="72" height="34.9" style="fill:var(--olive)"/><rect x="184.0" y="159.3" width="72" height="71.8" style="fill:var(--olive-2)"/><rect x="184.0" y="122.4" width="72" height="34.9" style="fill:var(--olive-3)"/><rect x="184.0" y="95.1" width="72" height="25.3" style="fill:var(--olive-4)"/><text x="220.0" y="85.1" class="val" text-anchor="middle">128</text><text x="220.0" y="300" class="tick" text-anchor="middle">2022</text><rect x="304.0" y="230.4" width="72" height="37.6" style="fill:var(--olive)"/><rect x="304.0" y="153.8" width="72" height="74.5" style="fill:var(--olive-2)"/><rect x="304.0" y="115.6" width="72" height="36.3" style="fill:var(--olive-3)"/><rect x="304.0" y="71.8" width="72" height="41.7" style="fill:var(--olive-4)"/><text x="340.0" y="61.8" class="val" text-anchor="middle">145</text><text x="340.0" y="300" class="tick" text-anchor="middle">2023</text><rect x="424.0" y="227.6" width="72" height="40.4" style="fill:var(--olive)"/><rect x="424.0" y="148.4" width="72" height="77.3" style="fill:var(--olive-2)"/><rect x="424.0" y="108.7" width="72" height="37.6" style="fill:var(--olive-3)"/><rect x="424.0" y="80.0" width="72" height="26.7" style="fill:var(--olive-4)"/><text x="460.0" y="70.0" class="val" text-anchor="middle">139</text><text x="460.0" y="300" class="tick" text-anchor="middle">2024</text><rect x="544.0" y="226.3" width="72" height="41.7" style="fill:var(--olive)"/><rect x="544.0" y="138.8" width="72" height="85.5" style="fill:var(--olive-2)"/><rect x="544.0" y="95.1" width="72" height="41.7" style="fill:var(--olive-3)"/><rect x="544.0" y="37.7" width="72" height="55.4" style="fill:var(--olive-4)"/><text x="580.0" y="27.7" class="val" text-anchor="middle">170</text><text x="580.0" y="300" class="tick" text-anchor="middle">2025</text></svg>
+<div class="fields"><b>수집 항목</b> 연도, 카테고리, 순위, 브랜드, 브랜드 코드, 상품명, 상품번호, 대표 리뷰, 이미지 URL</div>
+</div>
+<div class="link">
+<div class="key"><b>35</b><span>공통 브랜드</span></div>
+<div class="keyn">브랜드명<br>한글 매핑으로 조인</div>
+</div>
+<div class="panel amz">
+<div class="ph"><h2>Amazon K-뷰티 상위 상품</h2><span class="when">2026년 11월 1일 기준</span></div>
+<div class="stats">
+<div class="st"><b>214</b><span>상품 (판매 순위순)</span></div>
+<div class="st"><b>71</b><span>브랜드</span></div>
+<div class="st"><b>4.46</b><span>평균 별점</span></div>
+</div>
+<div class="ct">상품 유형별 구성</div>
+<div class="leg"><span><i style="background:var(--slate)"></i>스킨케어 주요 유형</span><span><i style="background:var(--gray)"></i>아이 패치, 밤, 미스트, 헤어 등</span></div>
+<svg viewBox="0 0 640 269" role="img" aria-label="Amazon 상품 유형별 개수: 크림 56, 세럼 앰플 54, 선케어 21, 토너 19, 마스크 19, 클렌저 16, 기타 29"><text x="104" y="25" class="lbl" text-anchor="end">크림</text><rect x="118" y="10" width="462.0" height="22" rx="3" style="fill:var(--slate)"/><text x="590.0" y="26" class="val">56</text><text x="104" y="62" class="lbl" text-anchor="end">세럼, 앰플</text><rect x="118" y="47" width="445.5" height="22" rx="3" style="fill:var(--slate)"/><text x="573.5" y="63" class="val">54</text><text x="104" y="99" class="lbl" text-anchor="end">선케어</text><rect x="118" y="84" width="173.2" height="22" rx="3" style="fill:var(--slate)"/><text x="301.2" y="100" class="val">21</text><text x="104" y="136" class="lbl" text-anchor="end">토너</text><rect x="118" y="121" width="156.8" height="22" rx="3" style="fill:var(--slate)"/><text x="284.8" y="137" class="val">19</text><text x="104" y="173" class="lbl" text-anchor="end">마스크</text><rect x="118" y="158" width="156.8" height="22" rx="3" style="fill:var(--slate)"/><text x="284.8" y="174" class="val">19</text><text x="104" y="210" class="lbl" text-anchor="end">클렌저</text><rect x="118" y="195" width="132.0" height="22" rx="3" style="fill:var(--slate)"/><text x="260.0" y="211" class="val">16</text><text x="104" y="247" class="lbl" text-anchor="end">기타</text><rect x="118" y="232" width="239.3" height="22" rx="3" style="fill:var(--gray)"/><text x="367.2" y="248" class="val">29</text></svg>
+<div class="fields"><b>수집 항목</b> 브랜드(영문, 한글 매핑), 상품 제목, 제품 유형, 용량, 별점, 리뷰 수, 지난달 구매 건수, 가격(KRW)</div>
+</div>
+</div>
+<footer>정제: 올리브영 원본 848행에서 1위 이중 수집 등 중복 113행을 제거하고, 2024년 글로벌 부문 19건은 연도별 집계에서 분리. 특별 부문(클린뷰티, 라이징스타 등)은 순위 없이 선정. Amazon 구매 건수는 ‘1천 이상’ 같은 구간값으로만 제공.</footer>
+</section></div>
+<script>
+function fit(){var s=document.getElementById('slide');var k=Math.min(innerWidth/1920,innerHeight/1080);s.style.transform='scale('+k+')';}
+addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

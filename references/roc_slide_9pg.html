@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>올리브영 수상 이력과 Amazon 진입 ROC 분석</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#eef0ea;--paper:#ffffff;--ink:#1d2420;--sub:#4f5a52;--muted:#8a938c;--line:#dfe3dc;--olive:#5b7a12;--olive-soft:rgba(91,122,18,.10);--slate:#5d6f86;--gray:#b3b9b2;}
+@media (prefers-color-scheme: dark){:root{color-scheme:dark;--bg:#101311;--paper:#1a1f1c;--ink:#eef1ec;--sub:#bcc4bd;--muted:#88918a;--line:#2f3631;--olive:#a7cf4a;--olive-soft:rgba(167,207,74,.12);--slate:#93a7c2;--gray:#5f6862;}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;color:var(--ink);overflow:hidden}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{width:1920px;height:1080px;background:var(--paper);transform-origin:center;padding:72px 104px 52px;display:grid;grid-template-columns:700px 1fr;grid-template-rows:auto 1fr auto;column-gap:96px;flex-shrink:0}
+header{grid-column:1/-1;margin-bottom:24px}
+.kicker{font-size:24px;color:var(--olive);font-weight:600;margin-bottom:18px}
+h1{font-size:54px;line-height:1.25;font-weight:700;letter-spacing:-.02em;max-width:1560px;word-break:keep-all}
+.chart{min-height:0}.chart svg{width:700px;height:auto;display:block}
+.grid{stroke:var(--line);stroke-width:1}
+.frame{fill:none;stroke:var(--muted);stroke-width:1.2}
+.area{fill:var(--olive-soft)}
+.chance{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 6}
+.chance-lbl{fill:var(--muted);font-size:17px}
+.c-sk{fill:none;stroke:var(--olive);stroke-width:5;stroke-linejoin:round;stroke-linecap:round}
+.c-lr{fill:none;stroke:var(--slate);stroke-width:2.5;stroke-dasharray:10 7;stroke-linejoin:round}
+.c-all{fill:none;stroke:var(--gray);stroke-width:2.5;stroke-dasharray:2 6;stroke-linecap:round}
+.tick{fill:var(--muted);font-size:18px}
+.axis{fill:var(--sub);font-size:19px}
+.dot{fill:var(--olive);stroke:var(--paper);stroke-width:3}
+.dot2{fill:var(--paper);stroke:var(--olive);stroke-width:3}
+.lead{stroke:var(--sub);stroke-width:1.2}
+.note-h{fill:var(--ink);font-size:21px;font-weight:700}
+.note{fill:var(--sub);font-size:19px}.b{fill:var(--ink);font-weight:700}
+aside{display:flex;flex-direction:column;padding-top:20px}
+.models{display:grid;gap:30px;margin-bottom:52px}
+.m{display:grid;grid-template-columns:64px 1fr auto;align-items:center;column-gap:22px;padding-bottom:26px;border-bottom:1px solid var(--line)}
+.m svg{width:64px;height:12px}
+.m .name{font-size:27px;font-weight:600}
+.m .desc{font-size:19px;color:var(--sub);margin-top:6px;line-height:1.45}
+.m .auc{font-size:52px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.m.lead-row .auc,.m.lead-row .name{color:var(--olive)}
+.m.dim .auc,.m.dim .name{color:var(--muted)}
+.auc small{display:block;font-size:16px;font-weight:500;color:var(--muted);text-align:right;letter-spacing:0}
+.take{word-break:keep-all;font-size:28px;line-height:1.6;font-weight:500;max-width:820px}
+.take p+p{margin-top:16px;font-size:23px;color:var(--sub);font-weight:400}
+footer{word-break:keep-all;grid-column:1/-1;font-size:17px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:18px;margin-top:12px}
+@media print{html,body{background:#fff;overflow:visible}.stage{position:static}.slide{transform:none!important}@page{size:1920px 1080px;margin:0}}
+</style>
+</head>
+<body>
+<div class="stage"><section class="slide" id="slide">
+<header>
+<div class="kicker">올리브영 어워즈 2021–2025 × Amazon K-뷰티 상위 214개 (2026년 11월 1일)</div>
+<h1>올리브영 스킨케어 수상 이력은 Amazon 상위 목록 진입 브랜드를 쓸 만한 수준으로 가려낸다</h1>
+</header>
+<div class="chart"><svg viewBox="0 0 760 730" role="img" aria-labelledby="ct cd">
+<title id="ct">ROC 곡선</title><desc id="cd">스킨케어 수상 횟수 AUC 0.78, 로지스틱 회귀 AUC 0.77, 전체 수상 횟수 AUC 0.61, 무작위 기준 0.50</desc>
+<path d="M110,640 L110.0,640.0 L110.0,622.8 L115.6,605.7 L118.5,588.6 L118.5,571.4 L121.3,554.3 L132.6,537.2 L135.5,485.7 L146.8,485.7 L166.6,382.8 L194.9,348.6 L336.4,125.7 L710.0,40.0 L710,640 Z" class="area"/>
+<line x1="110.0" y1="40" x2="110.0" y2="640" class="grid"/><line x1="110" y1="640.0" x2="710" y2="640.0" class="grid"/><line x1="230.0" y1="40" x2="230.0" y2="640" class="grid"/><line x1="110" y1="520.0" x2="710" y2="520.0" class="grid"/><line x1="350.0" y1="40" x2="350.0" y2="640" class="grid"/><line x1="110" y1="400.0" x2="710" y2="400.0" class="grid"/><line x1="470.0" y1="40" x2="470.0" y2="640" class="grid"/><line x1="110" y1="280.0" x2="710" y2="280.0" class="grid"/><line x1="590.0" y1="40" x2="590.0" y2="640" class="grid"/><line x1="110" y1="159.99999999999997" x2="710" y2="159.99999999999997" class="grid"/><line x1="710.0" y1="40" x2="710.0" y2="640" class="grid"/><line x1="110" y1="40.0" x2="710" y2="40.0" class="grid"/>
+<line x1="110" y1="640" x2="710" y2="40" class="chance"/>
+<text transform="translate(590.0,187.0) rotate(-45)" class="chance-lbl" text-anchor="middle">무작위 예측 (AUC 0.50)</text>
+<path d="M110.0,640.0 L115.6,640.0 L115.6,605.7 L121.3,588.6 L124.2,571.4 L132.6,554.3 L135.5,537.2 L141.1,520.0 L152.5,485.7 L186.4,468.6 L209.1,400.0 L265.6,400.0 L327.9,280.0 L432.6,262.8 L710.0,40.0" class="c-all"/>
+<path d="M110.0,640.0 L112.8,640.0 L112.8,605.7 L121.3,605.7 L121.3,588.6 L124.2,588.6 L124.2,520.0 L127.0,520.0 L127.0,502.8 L127.0,468.6 L129.8,468.6 L129.8,451.4 L138.3,451.4 L138.3,434.3 L160.9,434.3 L160.9,400.0 L163.8,400.0 L169.5,382.8 L189.3,382.8 L194.9,382.8 L203.4,382.8 L206.2,348.6 L206.2,314.3 L211.9,314.3 L214.7,314.3 L220.4,314.3 L220.4,297.2 L226.0,297.2 L231.7,297.2 L237.4,297.2 L240.2,297.2 L240.2,280.0 L248.7,262.8 L251.5,262.8 L257.2,262.8 L265.6,245.7 L271.3,245.7 L274.2,194.3 L277.0,194.3 L288.3,194.3 L291.1,160.0 L291.1,142.8 L316.6,142.8 L316.6,125.7 L330.7,125.7 L339.3,125.7 L342.1,125.7 L347.7,125.7 L367.5,125.7 L370.4,125.7 L370.4,108.6 L376.0,108.6 L384.5,108.6 L395.8,108.6 L401.5,108.6 L415.6,91.4 L424.2,91.4 L429.8,91.4 L438.3,91.4 L444.0,91.4 L446.8,91.4 L463.8,91.4 L486.4,91.4 L489.3,91.4 L494.9,91.4 L511.9,91.4 L523.2,91.4 L531.7,91.4 L534.5,91.4 L543.0,91.4 L545.8,91.4 L557.2,91.4 L562.8,91.4 L579.8,91.4 L582.6,91.4 L594.0,91.4 L599.6,91.4 L605.3,91.4 L610.9,91.4 L622.3,91.4 L622.3,74.3 L625.1,74.3 L630.7,74.3 L639.3,74.3 L644.9,74.3 L650.5,74.3 L656.2,74.3 L661.9,74.3 L667.5,74.3 L670.4,74.3 L676.0,74.3 L687.4,74.3 L693.0,74.3 L704.4,74.3 L704.4,57.2 L710.0,57.2 L710.0,40.0" class="c-lr"/>
+<path d="M110.0,640.0 L110.0,622.8 L115.6,605.7 L118.5,588.6 L118.5,571.4 L121.3,554.3 L132.6,537.2 L135.5,485.7 L146.8,485.7 L166.6,382.8 L194.9,348.6 L336.4,125.7 L710.0,40.0" class="c-sk"/>
+<rect x="110" y="40" width="600" height="600" class="frame"/>
+<text x="110.0" y="670" class="tick" text-anchor="middle">0.0</text><text x="94" y="646.0" class="tick" text-anchor="end">0.0</text><text x="230.0" y="670" class="tick" text-anchor="middle">0.2</text><text x="94" y="526.0" class="tick" text-anchor="end">0.2</text><text x="350.0" y="670" class="tick" text-anchor="middle">0.4</text><text x="94" y="406.0" class="tick" text-anchor="end">0.4</text><text x="470.0" y="670" class="tick" text-anchor="middle">0.6</text><text x="94" y="286.0" class="tick" text-anchor="end">0.6</text><text x="590.0" y="670" class="tick" text-anchor="middle">0.8</text><text x="94" y="165.99999999999997" class="tick" text-anchor="end">0.8</text><text x="710.0" y="670" class="tick" text-anchor="middle">1.0</text><text x="94" y="46.0" class="tick" text-anchor="end">1.0</text>
+<text x="410.0" y="708" class="axis" text-anchor="middle">위양성률 (FPR): Amazon에 없는데 있다고 예측한 비율</text>
+<text transform="translate(36,340.0) rotate(-90)" class="axis" text-anchor="middle">진양성률 (TPR): Amazon 진입 브랜드를 찾아낸 비율</text>
+<line x1="336.44" y1="125.74000000000001" x2="354.0" y2="394.0" class="lead"/>
+<line x1="194.89999999999998" y1="348.58" x2="344.0" y2="480.0" class="lead"/>
+<circle cx="336.44" cy="125.74000000000001" r="9" class="dot"/>
+<circle cx="194.89999999999998" cy="348.58" r="7" class="dot2"/>
+<text x="350.0" y="424.0" class="note-h">커트라인을 바꾸면</text>
+<text x="350.0" y="456.0" class="note"><tspan class="b">1회 이상</tspan>  진입 35개 중 30개 포착</text>
+<text x="350.0" y="482.0" class="note" dx="96">미진입 212개 중 80개 오탐</text>
+<text x="350.0" y="516.0" class="note"><tspan class="b">2회 이상</tspan>  진입 35개 중 17개 포착</text>
+<text x="350.0" y="542.0" class="note" dx="96">미진입 212개 중 30개 오탐</text>
+</svg></div>
+<aside>
+<div class="models">
+<div class="m lead-row">
+<svg viewBox="0 0 64 12" aria-hidden="true"><line x1="2" y1="6" x2="62" y2="6" style="stroke:var(--olive);stroke-width:5;stroke-linecap:round"/></svg>
+<div><div class="name">스킨케어 부문 수상 횟수</div><div class="desc">변수 하나, 커트라인만 조정</div></div>
+<div class="auc">0.78<small>95% CI 0.70–0.85</small></div>
+</div>
+<div class="m">
+<svg viewBox="0 0 64 12" aria-hidden="true"><line x1="2" y1="6" x2="62" y2="6" style="stroke:var(--slate);stroke-width:2.5;stroke-dasharray:10 7"/></svg>
+<div><div class="name">로지스틱 회귀</div><div class="desc">변수 5개, 5-fold 교차검증</div></div>
+<div class="auc">0.77<small>95% CI 0.67–0.86</small></div>
+</div>
+<div class="m dim">
+<svg viewBox="0 0 64 12" aria-hidden="true"><line x1="3" y1="6" x2="62" y2="6" style="stroke:var(--gray);stroke-width:2.5;stroke-dasharray:2 6;stroke-linecap:round"/></svg>
+<div><div class="name">전체 부문 수상 횟수</div><div class="desc">메이크업, 헤어, 식품 포함</div></div>
+<div class="auc">0.61</div>
+</div>
+</div>
+<div class="take">
+<p>상을 몇 개 받았는지보다 어떤 부문에서 받았는지가 중요하다.</p>
+<p>변수를 다섯 개로 늘려도 성능이 오르지 않았다. 예측 신호는 스킨케어 수상 하나에 몰려 있다.</p>
+</div>
+</aside>
+<footer>대상: 올리브영 어워즈 수상 브랜드 247개, 이 중 Amazon 목록 진입 35개. 동일 시점 판별력이며 시간 순서를 지킨 예측 검증은 아님. Amazon 목록에 아누아, 메디힐 등 주요 브랜드가 빠져 있어 표본 편향 가능성 있음. 신뢰구간은 부트스트랩 1,000회.</footer>
+</section></div>
+<script>
+function fit(){var s=document.getElementById('slide');var k=Math.min(innerWidth/1920,innerHeight/1080);s.style.transform='scale('+k+')';}
+addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

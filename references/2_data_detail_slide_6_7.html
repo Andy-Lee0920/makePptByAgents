@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>데이터 상세: 브랜드로 본 두 데이터</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+:root{--bg:#eef0ea;--paper:#ffffff;--ink:#1d2420;--sub:#4f5a52;--muted:#8a938c;--line:#dfe3dc;--olive:#5b7a12;--olive-soft:rgba(91,122,18,.07);--olive-bg:rgba(91,122,18,.16);--slate:#5d6f86;--slate-soft:rgba(93,111,134,.07);--gray:#b3b9b2;}
+@media (prefers-color-scheme: dark){:root{color-scheme:dark;--bg:#101311;--paper:#1a1f1c;--ink:#eef1ec;--sub:#bcc4bd;--muted:#88918a;--line:#2f3631;--olive:#a7cf4a;--olive-soft:rgba(167,207,74,.07);--olive-bg:rgba(167,207,74,.18);--slate:#93a7c2;--slate-soft:rgba(147,167,194,.07);--gray:#5f6862;}}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%;background:var(--bg);font-family:Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;color:var(--ink);overflow:hidden;word-break:keep-all}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+.slide{width:1920px;height:1080px;background:var(--paper);transform-origin:center;padding:72px 104px 52px;display:grid;grid-template-rows:auto 1fr auto;flex-shrink:0}
+.kicker{font-size:24px;color:var(--olive);font-weight:600;margin-bottom:18px}
+h1{font-size:54px;line-height:1.25;font-weight:700;letter-spacing:-.02em}
+.body{display:grid;grid-template-columns:1fr 1fr;gap:56px;margin-top:30px;min-height:0}
+.col{border-radius:16px;padding:26px 36px 18px;display:flex;flex-direction:column;min-height:0}
+.oy{background:var(--olive-soft)}.amz{background:var(--slate-soft)}
+.ch{display:flex;justify-content:space-between;align-items:baseline}
+.ch h2{font-size:30px;font-weight:700}
+.oy h2{color:var(--olive)}.amz h2{color:var(--slate)}
+.unit{font-size:19px;color:var(--sub)}
+.msg{font-size:24px;font-weight:600;margin:14px 0 8px;line-height:1.4}
+.leg{display:flex;gap:22px;font-size:17px;color:var(--sub)}
+.leg span{display:flex;align-items:center;gap:8px}
+.leg i{width:16px;height:16px;border-radius:50%;display:inline-block}
+.col svg{width:100%;height:auto;display:block;margin-top:6px}
+.grid{stroke:var(--line);stroke-width:1}
+.tick{fill:var(--muted);font-size:17px}
+.axis{fill:var(--sub);font-size:18px}
+.guide{stroke:var(--muted);stroke-width:1.4;stroke-dasharray:6 6}
+.guide-t{fill:var(--muted);font-size:16px}
+.bg{fill:var(--olive-bg)}
+.on{fill:var(--olive);stroke:var(--paper);stroke-width:2.5}
+.off{fill:var(--paper);stroke:var(--olive);stroke-width:2.5}
+.aon{fill:var(--slate);stroke:var(--paper);stroke-width:2.5}
+.aoff{fill:var(--gray);stroke:var(--paper);stroke-width:2.5}
+.nm{fill:var(--sub);font-size:17px}.lead{stroke:var(--muted);stroke-width:1}
+.nm.strong{fill:var(--ink);font-weight:700;font-size:18px}
+footer{font-size:17px;color:var(--muted);line-height:1.6;border-top:1px solid var(--line);padding-top:18px;margin-top:20px}
+@media print{html,body{background:#fff;overflow:visible}.stage{position:static}.slide{transform:none!important}@page{size:1920px 1080px;margin:0}}
+</style>
+</head>
+<body>
+<div class="stage"><section class="slide" id="slide">
+<header>
+<div class="kicker">분석 데이터 상세</div>
+<h1>브랜드로 보면 두 데이터의 강자는 서로 다르다</h1>
+</header>
+<div class="body">
+<div class="col oy">
+<div class="ch"><h2>올리브영 어워즈</h2><span class="unit">수상 브랜드 247개</span></div>
+<div class="msg">상을 많이 받는 브랜드와 1위를 하는 브랜드는 다르다</div>
+<div class="leg"><span><i style="background:var(--olive)"></i>Amazon 목록에도 있음</span><span><i style="border:2.5px solid var(--olive)"></i>없음</span><span><i style="background:var(--olive-bg)"></i>수상 9회 이하</span><span><i style="width:22px;height:0;border-radius:0;border-top:1.6px dashed var(--muted)"></i>수상의 절반이 1위</span></div>
+<svg viewBox="0 0 760 520" role="img" aria-label="올리브영 브랜드별 총 수상 횟수와 1위 횟수 산점도. 라운드랩 13회 중 1위 8회, 바이오더마 17회 중 5회, 아누아 10회 중 1회."><line x1="70" x2="730" y1="450.0" y2="450.0" class="grid"/><text x="58" y="456.0" class="tick" text-anchor="end">0</text><line x1="70" x2="730" y1="306.7" y2="306.7" class="grid"/><text x="58" y="312.7" class="tick" text-anchor="end">3</text><line x1="70" x2="730" y1="163.3" y2="163.3" class="grid"/><text x="58" y="169.3" class="tick" text-anchor="end">6</text><line x1="70" x2="730" y1="20.0" y2="20.0" class="grid"/><text x="58" y="26.0" class="tick" text-anchor="end">9</text><text x="70.0" y="480" class="tick" text-anchor="middle">0</text><text x="180.0" y="480" class="tick" text-anchor="middle">3</text><text x="290.0" y="480" class="tick" text-anchor="middle">6</text><text x="400.0" y="480" class="tick" text-anchor="middle">9</text><text x="510.0" y="480" class="tick" text-anchor="middle">12</text><text x="620.0" y="480" class="tick" text-anchor="middle">15</text><text x="730.0" y="480" class="tick" text-anchor="middle">18</text><line x1="70.0" y1="450.0" x2="730.0" y2="20.0" class="guide"/><circle cx="216.7" cy="402.2" r="6.8" class="bg"/><circle cx="106.7" cy="450.0" r="25.9" class="bg"/><circle cx="143.3" cy="450.0" r="16.2" class="bg"/><circle cx="143.3" cy="402.2" r="7.4" class="bg"/><circle cx="400.0" cy="402.2" r="6.1" class="bg"/><circle cx="180.0" cy="450.0" r="13.6" class="bg"/><circle cx="216.7" cy="450.0" r="11.5" class="bg"/><circle cx="253.3" cy="402.2" r="6.8" class="bg"/><circle cx="290.0" cy="450.0" r="7.9" class="bg"/><circle cx="180.0" cy="402.2" r="6.8" class="bg"/><circle cx="253.3" cy="450.0" r="7.9" class="bg"/><circle cx="290.0" cy="354.4" r="6.1" class="bg"/><circle cx="290.0" cy="258.9" r="6.1" class="bg"/><circle cx="253.3" cy="211.1" r="6.8" class="bg"/><circle cx="326.7" cy="354.4" r="5.2" class="bg"/><circle cx="326.7" cy="450.0" r="6.8" class="bg"/><circle cx="106.7" cy="402.2" r="6.1" class="bg"/><circle cx="326.7" cy="306.7" r="5.2" class="bg"/><circle cx="216.7" cy="306.7" r="6.8" class="bg"/><circle cx="253.3" cy="354.4" r="5.2" class="bg"/><circle cx="290.0" cy="402.2" r="5.2" class="bg"/><circle cx="326.7" cy="163.3" r="5.2" class="bg"/><circle cx="253.3" cy="306.7" r="6.1" class="bg"/><circle cx="216.7" cy="354.4" r="5.2" class="bg"/><circle cx="363.3" cy="258.9" r="6.1" class="bg"/><circle cx="400.0" cy="258.9" r="5.2" class="bg"/><circle cx="180.0" cy="354.4" r="5.2" class="bg"/><circle cx="510.0" cy="306.7" r="9" class="on"/><text x="524.0" y="312.7" class="nm" text-anchor="start">닥터지</text><circle cx="473.3" cy="258.9" r="9" class="off"/><text x="473.3" y="288.9" class="nm" text-anchor="middle">딜라이트 프로젝트</text><circle cx="546.7" cy="67.8" r="9" class="on"/><text x="560.7" y="73.8" class="nm strong" text-anchor="start">라운드랩</text><circle cx="444.7" cy="258.9" r="9" class="off"/><text x="446.7" y="241.9" class="nm" text-anchor="middle">롬앤</text><circle cx="473.3" cy="163.3" r="9" class="off"/><text x="473.3" y="145.3" class="nm" text-anchor="middle">메디힐</text><circle cx="436.7" cy="163.3" r="9" class="on"/><text x="422.7" y="169.3" class="nm" text-anchor="end">미쟝센</text><circle cx="693.3" cy="211.1" r="9" class="off"/><text x="693.3" y="193.1" class="nm strong" text-anchor="middle">바이오더마</text><circle cx="436.7" cy="402.2" r="9" class="off"/><text x="450.7" y="408.2" class="nm strong" text-anchor="start">아누아</text><circle cx="428.6" cy="258.9" r="9" class="on"/><text x="414.6" y="264.9" class="nm" text-anchor="end">어노브</text><circle cx="436.7" cy="306.7" r="9" class="off"/><text x="422.7" y="312.7" class="nm" text-anchor="end">웨이크메이크</text><circle cx="656.7" cy="115.6" r="9" class="off"/><text x="656.7" y="97.6" class="nm" text-anchor="middle">클리오</text><circle cx="510.0" cy="258.9" r="9" class="on"/><text x="524.0" y="264.9" class="nm" text-anchor="start">토리든</text><text x="400.0" y="512" class="axis" text-anchor="middle">5년 누적 수상 횟수</text><text transform="translate(18,235.0) rotate(-90)" class="axis" text-anchor="middle">1위 수상 횟수</text></svg>
+</div>
+<div class="col amz">
+<div class="ch"><h2>Amazon K-뷰티 상위 상품</h2><span class="unit">브랜드 71개</span></div>
+<div class="msg">상품을 많이 올린 브랜드보다 히트 상품을 가진 브랜드가 더 팔린다</div>
+<div class="leg"><span><i style="background:var(--slate)"></i>올리브영 수상 이력 있음</span><span><i style="background:var(--gray)"></i>없음</span></div>
+<svg viewBox="0 0 760 520" role="img" aria-label="Amazon 브랜드별 목록 내 상품 수와 지난달 구매 건수 합계 산점도, 로그 척도. 메디큐브는 상품 3개로 12만 건, 닥터멜락신은 15개로 8.6만 건, 이퀄베리는 9개로 21.1만 건."><line x1="86" x2="730" y1="375.1" y2="375.1" class="grid"/><text x="74" y="381.1" class="tick" text-anchor="end">1천</text><line x1="86" x2="730" y1="231.7" y2="231.7" class="grid"/><text x="74" y="237.7" class="tick" text-anchor="end">1만</text><line x1="86" x2="730" y1="88.4" y2="88.4" class="grid"/><text x="74" y="94.4" class="tick" text-anchor="end">10만</text><text x="126.2" y="480" class="tick" text-anchor="middle">1</text><text x="247.0" y="480" class="tick" text-anchor="middle">4</text><text x="408.0" y="480" class="tick" text-anchor="middle">8</text><text x="569.0" y="480" class="tick" text-anchor="middle">12</text><text x="730.0" y="480" class="tick" text-anchor="middle">16</text><circle cx="126.2" cy="388.9" r="6" class="aoff"/><circle cx="166.5" cy="288.8" r="6" class="aoff"/><circle cx="126.2" cy="188.6" r="6" class="aoff"/><circle cx="287.2" cy="127.9" r="6" class="aoff"/><circle cx="689.8" cy="97.7" r="9" class="aoff"/><text x="689.8" y="79.7" class="nm strong" text-anchor="middle">닥터멜락신</text><circle cx="206.8" cy="313.2" r="6" class="aoff"/><circle cx="166.5" cy="375.1" r="6" class="aoff"/><circle cx="166.5" cy="320.6" r="6" class="aoff"/><circle cx="166.5" cy="345.8" r="6" class="aoff"/><circle cx="287.2" cy="220.4" r="6" class="aoff"/><circle cx="126.2" cy="274.9" r="6" class="aoff"/><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="126.2" cy="406.9" r="6" class="aoff"/><circle cx="166.5" cy="290.3" r="6" class="aoff"/><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="367.8" cy="97.9" r="9" class="aoff"/><text x="381.8" y="103.9" class="nm" text-anchor="start">셀리맥스</text><circle cx="166.5" cy="331.9" r="6" class="aoff"/><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="206.8" cy="311.0" r="6" class="aoff"/><circle cx="126.2" cy="406.9" r="6" class="aoff"/><circle cx="126.2" cy="306.7" r="6" class="aoff"/><circle cx="126.2" cy="418.2" r="6" class="aoff"/><circle cx="126.2" cy="397.3" r="6" class="aoff"/><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="126.2" cy="388.9" r="6" class="aoff"/><circle cx="126.2" cy="331.9" r="6" class="aoff"/><circle cx="448.2" cy="41.9" r="9" class="aoff"/><text x="462.2" y="47.9" class="nm strong" text-anchor="start">이퀄베리</text><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="166.5" cy="231.7" r="6" class="aoff"/><circle cx="126.2" cy="331.9" r="6" class="aoff"/><circle cx="528.8" cy="167.4" r="9" class="aoff"/><text x="528.8" y="191.4" class="nm" text-anchor="middle">토소웅</text><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="126.2" cy="263.5" r="6" class="aoff"/><circle cx="126.2" cy="375.1" r="6" class="aoff"/><circle cx="126.2" cy="432.1" r="6" class="aoff"/><circle cx="166.5" cy="245.6" r="6" class="aoff"/><circle cx="287.2" cy="160.3" r="6" class="aon"/><circle cx="126.2" cy="331.9" r="6" class="aon"/><circle cx="126.2" cy="306.7" r="6" class="aon"/><circle cx="247.0" cy="226.9" r="6" class="aon"/><circle cx="649.5" cy="138.9" r="9" class="aon"/><text x="659.5" y="162.9" class="nm" text-anchor="middle">닥터엘시아</text><circle cx="126.2" cy="263.5" r="6" class="aon"/><circle cx="327.5" cy="220.4" r="6" class="aon"/><circle cx="287.2" cy="211.7" r="9" class="aon"/><text x="301.2" y="217.7" class="nm" text-anchor="start">라운드랩</text><circle cx="166.5" cy="338.5" r="6" class="aon"/><circle cx="166.5" cy="311.0" r="6" class="aon"/><circle cx="247.0" cy="257.6" r="6" class="aon"/><circle cx="206.8" cy="77.0" r="9" class="aon"/><text x="192.8" y="83.0" class="nm strong" text-anchor="end">메디큐브</text><circle cx="126.2" cy="231.7" r="6" class="aon"/><circle cx="367.8" cy="59.6" r="9" class="aon"/><text x="353.8" y="65.6" class="nm" text-anchor="end">바이오던스</text><circle cx="166.5" cy="232.3" r="6" class="aon"/><circle cx="126.2" cy="331.9" r="6" class="aon"/><circle cx="126.2" cy="406.9" r="6" class="aon"/><circle cx="408.0" cy="142.4" r="6" class="aon"/><circle cx="126.2" cy="406.9" r="6" class="aon"/><circle cx="287.2" cy="105.1" r="9" class="aon"/><text x="301.2" y="113.1" class="nm" text-anchor="start">스킨1004</text><circle cx="206.8" cy="129.5" r="9" class="aon"/><text x="192.8" y="135.5" class="nm" text-anchor="end">아렌시아</text><circle cx="247.0" cy="259.5" r="6" class="aon"/><circle cx="166.5" cy="256.6" r="6" class="aon"/><circle cx="166.5" cy="331.9" r="6" class="aon"/><circle cx="126.2" cy="375.1" r="6" class="aon"/><circle cx="126.2" cy="331.9" r="6" class="aon"/><circle cx="488.5" cy="171.8" r="9" class="aon"/><text x="474.5" y="177.8" class="nm" text-anchor="end">이니스프리</text><circle cx="126.2" cy="375.1" r="6" class="aon"/><circle cx="166.5" cy="198.7" r="6" class="aon"/><circle cx="609.2" cy="138.8" r="9" class="aon"/><text x="595.2" y="128.8" class="nm" text-anchor="end">코스알엑스</text><circle cx="166.5" cy="331.9" r="9" class="aon"/><line x1="173.5" y1="336.9" x2="232.5" y2="369.9" class="lead"/><text x="236.5" y="375.9" class="nm" text-anchor="start">토리든</text><circle cx="126.2" cy="375.1" r="6" class="aon"/><circle cx="166.5" cy="253.9" r="6" class="aon"/><text x="408.0" y="512" class="axis" text-anchor="middle">상위 214개 안에 든 상품 수</text><text transform="translate(18,235.0) rotate(-90)" class="axis" text-anchor="middle">지난달 구매 건수 합계 (로그 척도)</text></svg>
+</div>
+</div>
+<footer>올리브영은 중복 제거 후 국내 부문 기준, 수상 10회 이상 브랜드만 이름 표시(원 크기는 같은 위치의 브랜드 수). Amazon 구매 건수는 ‘1천 이상’ 같은 구간 하한값의 브랜드별 합계이며 구매 건수가 없는 2개 브랜드는 제외.</footer>
+</section></div>
+<script>
+function fit(){var s=document.getElementById('slide');var k=Math.min(innerWidth/1920,innerHeight/1080);s.style.transform='scale('+k+')';}
+addEventListener('resize',fit);fit();
+</script>
+</body>
+</html>

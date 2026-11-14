@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -40 640 309" width="640" height="309" role="img" aria-label="Amazon 상품 유형별 개수: 크림 56, 세럼 앰플 54, 선케어 21, 토너 19, 마스크 19, 클렌저 16, 기타 29">
+<title>Amazon K-뷰티 상위 상품의 유형별 구성</title>
+<desc>Amazon 상품 유형별 개수: 크림 56, 세럼 앰플 54, 선케어 21, 토너 19, 마스크 19, 클렌저 16, 기타 29</desc>
+<style>
+text{font-family:"Pretendard Variable", Pretendard, "Noto Sans KR", sans-serif}
+.grid{stroke:#d6d0c4;stroke-width:1}
+.tick{fill:#8c877d;font-size:17px}
+.val{fill:#121513;font-size:18px;font-weight:700}
+.lbl{fill:#5a5f5b;font-size:18px}
+.leg-t{fill:#5a5f5b;font-size:16px}
+</style>
+<g class="legend"><rect x="0" y="-27.0" width="14" height="14" rx="3" fill="#5d6f86"/><text x="21" y="-14.2" class="leg-t">스킨케어 주요 유형</text><rect x="158" y="-27.0" width="14" height="14" rx="3" fill="#b9b3a7"/><text x="179" y="-14.2" class="leg-t">아이 패치, 밤, 미스트, 헤어 등</text></g>
+<g class="chart"><text x="104" y="25" class="lbl" text-anchor="end">크림</text><rect x="118" y="10" width="462.0" height="22" rx="3" style="fill:#5d6f86"/><text x="590.0" y="26" class="val">56</text><text x="104" y="62" class="lbl" text-anchor="end">세럼, 앰플</text><rect x="118" y="47" width="445.5" height="22" rx="3" style="fill:#5d6f86"/><text x="573.5" y="63" class="val">54</text><text x="104" y="99" class="lbl" text-anchor="end">선케어</text><rect x="118" y="84" width="173.2" height="22" rx="3" style="fill:#5d6f86"/><text x="301.2" y="100" class="val">21</text><text x="104" y="136" class="lbl" text-anchor="end">토너</text><rect x="118" y="121" width="156.8" height="22" rx="3" style="fill:#5d6f86"/><text x="284.8" y="137" class="val">19</text><text x="104" y="173" class="lbl" text-anchor="end">마스크</text><rect x="118" y="158" width="156.8" height="22" rx="3" style="fill:#5d6f86"/><text x="284.8" y="174" class="val">19</text><text x="104" y="210" class="lbl" text-anchor="end">클렌저</text><rect x="118" y="195" width="132.0" height="22" rx="3" style="fill:#5d6f86"/><text x="260.0" y="211" class="val">16</text><text x="104" y="247" class="lbl" text-anchor="end">기타</text><rect x="118" y="232" width="239.3" height="22" rx="3" style="fill:#b9b3a7"/><text x="367.2" y="248" class="val">29</text></g>
+</svg>
