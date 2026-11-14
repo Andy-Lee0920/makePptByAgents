@@ -1,6 +1,6 @@
 # 멀티에이전트 발표자료 개발 프로젝트
 
-HTML/CSS/JS 기반 웹 슬라이드 발표자료를 **리서치 · 기획 · 디자인 · 개발** 네 에이전트가 역할을 나눠 제작한다.
+HTML/CSS/JS 기반 웹 슬라이드 발표자료를 **리서치 · 기획 · 디자인 · 개발 · 모션** 다섯 에이전트가 역할을 나눠 제작한다.
 
 ## 1. 프로젝트 구조
 
@@ -14,14 +14,17 @@ HTML/CSS/JS 기반 웹 슬라이드 발표자료를 **리서치 · 기획 · 디
 ├── assets/images/                # 라이선스 확인된 이미지      ← searcher
 ├── src/
 │   ├── theme.css                 # 디자인 토큰 · 레이아웃 스타일 ← designer
-│   └── app.js                    # 렌더링 · 내비게이션 로직     ← developer
+│   ├── app.js                    # 렌더링 · 내비게이션 로직     ← developer
+│   ├── motion.css                # 전환 · 빌드 애니메이션 스타일 ← animator
+│   └── motion.js                 # 애니메이션 실행 로직         ← animator
 └── .claude/
     ├── skills/slide-schema.md    # slides.json 작성 규격 (단일 진실 공급원)
     └── agents/
         ├── searcher.md
         ├── planner.md
         ├── designer.md
-        └── developer.md
+        ├── developer.md
+        └── animator.md
 ```
 
 ## 2. 역할 분리 규칙 (가장 중요)
@@ -32,6 +35,7 @@ HTML/CSS/JS 기반 웹 슬라이드 발표자료를 **리서치 · 기획 · 디
 | `planner` | `data/slides.json` | 그 외 전부 |
 | `designer` | `src/theme.css` | 그 외 전부 |
 | `developer` | `index.html`, `src/app.js` | 그 외 전부 |
+| `animator` | `src/motion.css`, `src/motion.js` | 그 외 전부 |
 
 - 각 에이전트는 **자기 소유 파일만** 수정한다. 다른 파일에 변경이 필요하면 직접 고치지 말고, 결과 보고에 `요청 사항: <대상 에이전트> — <필요한 변경>` 형태로 남긴다.
 - `.claude/skills/slide-schema.md`는 에이전트 간 **계약(contract)** 이다. 에이전트는 이 파일을 임의로 수정하지 않으며, 스키마 변경은 사용자(또는 메인 세션)의 승인 후에만 반영한다.
@@ -42,6 +46,7 @@ HTML/CSS/JS 기반 웹 슬라이드 발표자료를 **리서치 · 기획 · 디
 - **planner → developer**: 슬라이드 데이터는 반드시 `slide-schema.md`의 `type`과 필드만 사용한다. 새 레이아웃이 필요하면 developer/designer에게 요청한다.
 - **developer → designer**: 마크업에 사용하는 클래스명은 `slide-schema.md`의 "CSS 클래스 계약" 절을 따른다. 새 클래스가 필요하면 designer에게 요청한다.
 - **designer**: 계약된 클래스와 CSS 변수만 스타일링하며, 마크업 구조 변경이 필요하면 developer에게 요청한다.
+- **animator**: 계약된 클래스를 선택자로만 쓰고 `.slide`의 `transform`(뷰어 스케일링)은 건드리지 않는다. 로드 태그·마크업이 필요하면 developer에게, 색·레이아웃 변경은 designer에게 요청한다.
 
 ### 권장 작업 순서
 1. `searcher` — 주제에 필요한 수치·사실을 인터넷에서 확인해 `data/research.md` 작성 (사용자 제공 수치 검증 포함)
@@ -49,6 +54,7 @@ HTML/CSS/JS 기반 웹 슬라이드 발표자료를 **리서치 · 기획 · 디
 3. `designer` — planner가 고른 type 배치를 검토(표 수, 이미지 레이아웃 반복, 시각 리듬)하고 필요하면 planner에 재배치 요청
 4. `developer` — 스키마의 모든 `type`을 렌더링하도록 `index.html`, `src/app.js` 구현
 5. `designer` — `src/theme.css`로 시각 스타일 완성
+5-1. `animator` — `src/motion.css`, `src/motion.js`로 슬라이드 전환·그래프 빌드 애니메이션 추가 (최종 상태는 theme.css 레이아웃과 동일, 인쇄 시 애니메이션 해제)
 6. 메인 세션 — 브라우저로 열어 전체 슬라이드 검수(캡처를 planner·designer에게도 전달), 필요 시 해당 에이전트에 재위임
 
 ## 3. 16:9 비율 유지 규칙
