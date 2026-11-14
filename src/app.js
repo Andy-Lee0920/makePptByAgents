@@ -31,9 +31,81 @@ const REQUIRED_FIELDS = {
   pillars: ['title', 'pillars', 'base'],
   roc: ['title', 'axes', 'curves'],
   'data-panels': ['title', 'panels'],
+  iceberg: ['title', 'above', 'below'],
+  interview: ['title', 'image', 'quote', 'interviewee'],
+  contrast: ['title', 'left', 'right'],
 };
 
-const SUPPORTED_VERSIONS = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.8', '1.9', '1.10', '1.11'];
+const SUPPORTED_VERSIONS = ['1.0', '1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.8', '1.9', '1.10', '1.11', '1.12', '1.13', '1.14', '1.15', '1.16'];
+
+// iceberg (v1.12): 좌표는 slide-schema.md 3.22 (캔버스 1920×1080 = SVG viewBox)
+const ICEBERG_ABOVE_RANGE = { min: 2, max: 4 };
+const ICEBERG_BELOW_RANGE = { min: 3, max: 5 };
+const ICEBERG_FLOW_RANGE = { min: 2, max: 5 };
+const ICEBERG_TONES = ['default', 'accent'];
+const ICEBERG_LIMITS = {
+  subtitle: 60, message: 40, flowStep: 16,
+  above: [['heading', 12], ['text', 26], ['example', 30]],
+  below: [['heading', 20], ['text', 24]],
+};
+// above 개수별 실제 위치 번호(data-slot). 0 왼쪽 수면 위 · 1 몸체 위 왼쪽 · 2 큰 봉우리 위 · 3 오른쪽 수면 위
+const ICEBERG_ABOVE_SLOTS = { 1: [0], 2: [0, 3], 3: [0, 2, 3], 4: [0, 1, 2, 3] };
+const ICEBERG_ART = {
+  viewBox: '0 0 1920 1080',
+  waterY: 500,
+  // 수면 위 원호(레퍼런스의 부드러운 곡선). 가운데에서 수면선(y 500)에 닿는다.
+  arc: 'M0,440 Q960,560 1920,440',
+  // 수면 위 면: [data-shade, 꼭짓점…]. 외곽 (470,500)→(650,445)→(900,360)→(1010,390)→(1180,290)→(1330,370)→(1440,440)→(1520,500)
+  above: [
+    [3, [470, 500], [650, 445], [720, 500]],
+    [1, [650, 445], [900, 360], [860, 440]],
+    [2, [650, 445], [860, 440], [720, 500]],
+    [2, [900, 360], [1010, 390], [860, 440]],
+    [3, [860, 440], [1010, 390], [1100, 420], [980, 500], [720, 500]],
+    [1, [1010, 390], [1180, 290], [1100, 420]],
+    [4, [1180, 290], [1330, 370], [1300, 450], [1100, 420]],
+    [3, [1100, 420], [1300, 450], [1240, 500], [980, 500]],
+    [5, [1330, 370], [1440, 440], [1300, 450]],
+    [4, [1300, 450], [1440, 440], [1400, 500], [1240, 500]],
+    [5, [1440, 440], [1520, 500], [1400, 500]],
+  ],
+  // 수면 아래 면. 외곽 (470,500)→(620,650)→(830,820)→(960,860)→(1130,800)→(1360,660)→(1520,500)
+  below: [
+    [2, [470, 500], [720, 500], [760, 600]],
+    [3, [470, 500], [760, 600], [620, 650]],
+    [1, [720, 500], [980, 500], [1060, 610], [760, 600]],
+    [4, [620, 650], [760, 600], [900, 720], [830, 820]],
+    [2, [760, 600], [1060, 610], [900, 720]],
+    [3, [980, 500], [1240, 500], [1330, 580], [1060, 610]],
+    [3, [1060, 610], [1150, 710], [900, 720]],
+    [5, [900, 720], [1150, 710], [1130, 800], [960, 860], [830, 820]],
+    [4, [1060, 610], [1330, 580], [1150, 710]],
+    [5, [1330, 580], [1360, 660], [1130, 800], [1150, 710]],
+    [2, [1240, 500], [1400, 500], [1330, 580]],
+    [4, [1400, 500], [1520, 500], [1360, 660], [1330, 580]],
+  ],
+  // below 노드 중심(data-pos 순서)
+  nodes: [[960, 570], [720, 650], [1240, 640], [1210, 745], [960, 790]],
+  // 네트워크 장식 점(수면 아래 몸체 안)
+  points: [
+    [600, 545], [830, 560], [1110, 545], [1390, 560], [650, 575], [860, 705],
+    [1080, 690], [1330, 620], [1040, 800], [820, 780], [1200, 560],
+  ],
+  // 연결선: n# = 노드(있을 때만), p# = 장식 점
+  links: [
+    ['n0', 'n1'], ['n0', 'n2'], ['n0', 'n3'], ['n1', 'n2'], ['n1', 'n3'], ['n1', 'n4'], ['n2', 'n3'], ['n3', 'n4'],
+    ['p0', 'p1'], ['p1', 'n0'], ['p1', 'n1'], ['n0', 'p2'], ['p2', 'p10'], ['p10', 'n2'], ['p10', 'p3'],
+    ['p3', 'n2'], ['p3', 'p7'], ['p7', 'n2'], ['p7', 'n3'], ['p4', 'n1'], ['p4', 'p0'], ['n1', 'p5'],
+    ['p5', 'n4'], ['p5', 'p9'], ['p9', 'n4'], ['p6', 'n0'], ['p6', 'n3'], ['p6', 'p5'], ['p8', 'n4'],
+    ['p8', 'n3'], ['p6', 'p8'],
+  ],
+  // 선 없이 흩뿌리는 작은 점
+  scatter: [[530, 525], [1470, 530], [905, 835], [1280, 680], [700, 700], [1180, 520]],
+  dotRadius: { s: 3, m: 6 },
+  // 바다 그라데이션 정지점(색은 CSS stop-color가 지정)
+  seaStops: [['top', 0], ['middle', 0.5], ['bottom', 1]],
+};
+const ICEBERG_FLOW_ARROW = '→';
 
 // data-panels (v1.9): 좌우 데이터 패널 2개 + 선택적 연결 배지
 const DPANEL_COUNT = 2;
@@ -42,6 +114,27 @@ const DPANEL_STATS_RANGE = { min: 0, max: 3 };
 const DPANEL_LIMITS = { statValue: 8, statLabel: 16, message: 40, chartTitle: 24, fieldsLabel: 8, fieldsText: 80 };
 const DPANEL_LINK_LIMITS = { value: 6, label: 10, note: 30 };
 const DPANEL_IMAGE_PATTERN = /^assets\/images\//;
+
+// interview (v1.13): 왼쪽 사진 + 오른쪽 본문. 3.23 · 4절 · 6절
+const INTERVIEW_INSIGHTS_RANGE = { min: 0, max: 2 };
+const INTERVIEW_LIMITS = {
+  title: 40, quote: 90, interviewee: 30, implication: 60,
+  insight: [['heading', 16], ['text', 50]],
+};
+const INTERVIEW_IMAGE_PATTERN = /^assets\/images\//;
+
+// contrast (v1.14): 왼쪽 '떠나는 것' vs 오른쪽 '남는 것'. 3.24 · 4절 · 6절
+const CONTRAST_SIDES = ['left', 'right']; // DOM 순서 = data-side 값
+const CONTRAST_MAX_LINES = 3;
+const CONTRAST_MAX_STATS = 3;
+const CONTRAST_HEADLINE_MAX_LINES = 2;
+const CONTRAST_MAX_IMAGES = 2; // v1.16: image 배열 최대 길이
+const CONTRAST_FITS = ['cover', 'contain']; // v1.16: 첫 값이 기본
+const CONTRAST_LIMITS = {
+  side: [['label', 10], ['headline', 16]],
+  line: 30,
+  stat: [['value', 8], ['label', 16]],
+};
 
 // roc (v1.8): references/roc_slide_9pg.html 좌표계 그대로
 const ROC = {
@@ -164,7 +257,16 @@ const TEXT_LIMITS = {
   process: [['caption', 60]],
   equation: [['caption', EQUATION_LIMITS.caption]],
   pillars: [['caption', PILLAR_LIMITS.caption]],
+  iceberg: [['subtitle', ICEBERG_LIMITS.subtitle], ['message', ICEBERG_LIMITS.message]],
+  interview: [
+    ['title', INTERVIEW_LIMITS.title], ['quote', INTERVIEW_LIMITS.quote],
+    ['interviewee', INTERVIEW_LIMITS.interviewee], ['implication', INTERVIEW_LIMITS.implication],
+  ],
 };
+
+// stepbar · 공통 source를 캔버스 기본 위치(첫 자식 / 마지막 자식) 대신 둘 곳 (6절 DOM 순서)
+const STEPBAR_AFTER = { interview: ':scope > .interview__media' };
+const SOURCE_CONTAINER = { interview: ':scope > .interview__body' };
 
 // 차트 SVG 좌표계 (CSS가 실제 표시 크기를 결정한다)
 const CHART = {
@@ -183,6 +285,10 @@ const CHART = {
   baselineCharWidth: 30,  // 기준선 라벨 폭 추정(글자당, 오른쪽 여백 확보용)
   baselineMinPad: 160,    // 기준선 라벨용 오른쪽 여백 최소/최대
   baselineMaxPad: 480,
+  tagPadX: 14,            // 기준선 라벨 배경 pill: 텍스트 bbox 대비 좌우/상하 여백
+  tagPadY: 8,
+  tagNarrowRatio: 0.55,   // 추정치: 비전각 문자(숫자·영문·기호) 폭 = baselineCharWidth × 비율
+  tagLineHeight: 36,      // 추정치: 측정 전 텍스트 높이(기하 폴백, 실제 글꼴 크기는 CSS가 결정)
 };
 // 가로 막대(hbar, v1.7) 기하. 좌표계는 CHART.width × CHART.height를 공유한다.
 const HBAR = {
@@ -757,8 +863,73 @@ function chartSlots(count, plot) {
 function appendCategoryLabels(svg, items, center) {
   const y = CHART.height - CHART.padBottom + CHART.labelGap;
   items.forEach((d, i) => {
-    svg.appendChild(svgText('chart__label', d.label, { x: center(i), y, 'text-anchor': 'middle' }));
+    svg.appendChild(svgText('chart__label', d.label, {
+      x: center(i), y, 'text-anchor': 'middle', 'data-highlight': String(d.highlight),
+    }));
   });
+}
+
+/* 기준선 라벨 배경 pill: <g.chart__baseline-tag> = rect.chart__baseline-tag-bg + text.chart__baseline-label
+   렌더 시점에는 SVG가 문서 밖(분리 상태)이라 getBBox가 0을 돌려준다. 그래서
+   (1) 생성 즉시 글자 수 기반 결정적 추정치로 rect를 그려 두고(측정이 끝내 불가해도 폭 0이 되지 않음),
+   (2) 문서에 붙은 뒤·폰트 로드 후·슬라이드 활성화·인쇄 직전에 getBBox 실측값으로 덮어쓴다.
+   숨은 슬라이드는 visibility:hidden이라 레이아웃이 살아 있어 실측 가능하고, display:none 등으로
+   bbox가 0이면 기존 값을 유지한다. */
+
+function isWideChar(ch) {
+  return /[ᄀ-ᇿ⺀-鿿가-힯豈-﫿＀-￯]/.test(ch);
+}
+
+function estimateTextWidth(text) {
+  return [...text].reduce((sum, ch) => sum + CHART.baselineCharWidth * (isWideChar(ch) ? 1 : CHART.tagNarrowRatio), 0);
+}
+
+// text 속성(x, y, text-anchor, dominant-baseline)으로부터 bbox를 추정한다.
+function estimateTextBox(text, attrs) {
+  const width = estimateTextWidth(text);
+  const height = CHART.tagLineHeight;
+  const anchor = attrs['text-anchor'] || 'start';
+  const shift = anchor === 'middle' ? width / 2 : anchor === 'end' ? width : 0;
+  const top = attrs['dominant-baseline'] === 'middle' ? attrs.y - height / 2 : attrs.y - height * 0.8;
+  return { x: attrs.x - shift, y: top, width, height };
+}
+
+function sizeTagRect(rect, box) {
+  const height = box.height + CHART.tagPadY * 2;
+  const attrs = {
+    x: box.x - CHART.tagPadX,
+    y: box.y - CHART.tagPadY,
+    width: box.width + CHART.tagPadX * 2,
+    height,
+    rx: height / 2,
+  };
+  Object.entries(attrs).forEach(([key, value]) => rect.setAttribute(key, String(Math.round(value * 10) / 10)));
+}
+
+function baselineTagEl(label, attrs) {
+  const group = svgEl('g', 'chart__baseline-tag');
+  const bg = svgEl('rect', 'chart__baseline-tag-bg');
+  const text = svgText('chart__baseline-label', label, attrs);
+  sizeTagRect(bg, estimateTextBox(label, attrs));
+  group.append(bg, text);
+  return group;
+}
+
+function measureBaselineTag(group) {
+  const bg = group.querySelector('.chart__baseline-tag-bg');
+  const text = group.querySelector('.chart__baseline-label');
+  if (!bg || !text || typeof text.getBBox !== 'function') return;
+  let box;
+  try {
+    box = text.getBBox();
+  } catch {
+    return; // 렌더 트리에 없으면(일부 브라우저) 예외 → 추정치 유지
+  }
+  if (box.width > 0 && box.height > 0) sizeTagRect(bg, box);
+}
+
+function measureBaselineTagsIn(scope) {
+  scope?.querySelectorAll('.chart__baseline-tag').forEach(measureBaselineTag);
 }
 
 function appendAxis(svg, y, plot) {
@@ -771,7 +942,7 @@ function appendBaseline(svg, baseline, y, plot) {
   const lineY = y(baseline.value);
   svg.appendChild(svgEl('line', 'chart__baseline', { x1: plot.left, x2: plot.right, y1: lineY, y2: lineY }));
   if (!baseline.label) return;
-  svg.appendChild(svgText('chart__baseline-label', baseline.label, {
+  svg.appendChild(baselineTagEl(baseline.label, {
     x: plot.right + CHART.baselineGap, y: lineY, 'text-anchor': 'start', 'dominant-baseline': 'middle',
   }));
 }
@@ -871,7 +1042,7 @@ function appendHbarBaseline(svg, baseline, x, plot) {
   const lineX = x(baseline.value);
   svg.appendChild(svgEl('line', 'chart__baseline', { x1: lineX, x2: lineX, y1: plot.top, y2: plot.bottom }));
   if (!baseline.label) return;
-  svg.appendChild(svgText('chart__baseline-label', baseline.label, {
+  svg.appendChild(baselineTagEl(baseline.label, {
     x: lineX, y: plot.top - HBAR.baselineLabelGap, 'text-anchor': 'middle',
   }));
 }
@@ -890,7 +1061,7 @@ function drawHbars(svg, items, baseline) {
     }));
     svg.appendChild(svgText('chart__value', d.display, hbarValueAttrs(x(d.value), zero, d.value, cy)));
     svg.appendChild(svgText('chart__label', d.label, {
-      x: plot.labelRight, y: cy, 'text-anchor': 'end', 'dominant-baseline': 'middle',
+      x: plot.labelRight, y: cy, 'text-anchor': 'end', 'dominant-baseline': 'middle', 'data-highlight': String(d.highlight),
     }));
   });
   svg.appendChild(svgEl('line', 'chart__axis', { x1: zero, x2: zero, y1: plot.top, y2: plot.bottom }));
@@ -1809,6 +1980,295 @@ function renderDataPanels(data, root) {
   root.appendChild(body);
 }
 
+/* iceberg (v1.12) -------------------------------------------------------- */
+// DOM: title → subtitle → .slide__iceberg(svg → ul.iceberg__above → ul.iceberg__below) → .iceberg__footer.
+// SVG는 캔버스 전체 좌표(1920×1080) 장식층. 색·음영은 클래스/data 속성으로 CSS가 지정한다.
+
+function icebergList(list, max) {
+  return (Array.isArray(list) ? list : []).slice(0, max).map(objectOr);
+}
+
+function icebergPoints(vertices) {
+  return vertices.map(([x, y]) => `${x},${y}`).join(' ');
+}
+
+function icebergSeaGradientEl(gradientId) {
+  const gradient = svgEl('linearGradient', 'iceberg__gradient', {
+    id: gradientId, gradientUnits: 'userSpaceOnUse',
+    x1: 0, y1: ICEBERG_ART.waterY, x2: 0, y2: SLIDE_HEIGHT,
+  });
+  gradient.dataset.gradient = 'sea';
+  ICEBERG_ART.seaStops.forEach(([name, offset]) => {
+    const stop = svgEl('stop', 'iceberg__stop', { offset });
+    stop.dataset.stop = name;
+    gradient.appendChild(stop);
+  });
+  return gradient;
+}
+
+// 바다 면 + 수면 원호 + 수면선. 바다 rect는 fill에 그라데이션 참조(url)만 둔다 — 색 값이 아님.
+function appendIcebergSea(svg, slideId) {
+  const gradientId = `${String(slideId).replace(/[^\w-]/g, '_')}--iceberg-sea`;
+  const defs = svgEl('defs');
+  defs.appendChild(icebergSeaGradientEl(gradientId));
+  svg.appendChild(defs);
+  const y = ICEBERG_ART.waterY;
+  svg.appendChild(svgEl('rect', 'iceberg__sea', {
+    x: 0, y, width: SLIDE_WIDTH, height: SLIDE_HEIGHT - y, fill: `url(#${gradientId})`,
+  }));
+  const arc = svgEl('path', 'iceberg__waterline', { d: ICEBERG_ART.arc });
+  arc.dataset.kind = 'arc';
+  svg.appendChild(arc);
+}
+
+function appendIcebergFacets(svg, part) {
+  ICEBERG_ART[part].forEach(([shade, ...vertices]) => {
+    const facet = svgEl('polygon', 'iceberg__facet', { points: icebergPoints(vertices) });
+    facet.dataset.part = part;
+    facet.dataset.shade = String(shade);
+    svg.appendChild(facet);
+  });
+}
+
+function appendIcebergWaterline(svg) {
+  const y = ICEBERG_ART.waterY;
+  const line = svgEl('path', 'iceberg__waterline', { d: `M0,${y} L${SLIDE_WIDTH},${y}` });
+  line.dataset.kind = 'line';
+  svg.appendChild(line);
+}
+
+// n# = 실제 있는 노드만, p# = 장식 점
+function icebergAnchors(nodeCount) {
+  const anchors = new Map();
+  ICEBERG_ART.nodes.slice(0, nodeCount).forEach((pt, i) => anchors.set(`n${i}`, pt));
+  ICEBERG_ART.points.forEach((pt, i) => anchors.set(`p${i}`, pt));
+  return anchors;
+}
+
+function icebergDotEl([cx, cy], size) {
+  const dot = svgEl('circle', 'iceberg__dot', { cx, cy, r: ICEBERG_ART.dotRadius[size] });
+  dot.dataset.size = size;
+  return dot;
+}
+
+function appendIcebergNetwork(svg, nodeCount) {
+  const anchors = icebergAnchors(nodeCount);
+  ICEBERG_ART.links
+    .filter(([a, b]) => anchors.has(a) && anchors.has(b))
+    .forEach(([a, b]) => {
+      const [x1, y1] = anchors.get(a);
+      const [x2, y2] = anchors.get(b);
+      svg.appendChild(svgEl('line', 'iceberg__link', { x1, y1, x2, y2 }));
+    });
+  ICEBERG_ART.scatter.forEach((pt) => svg.appendChild(icebergDotEl(pt, 's')));
+  ICEBERG_ART.points.forEach((pt) => svg.appendChild(icebergDotEl(pt, 's')));
+  ICEBERG_ART.nodes.slice(0, nodeCount).forEach((pt) => svg.appendChild(icebergDotEl(pt, 'm')));
+}
+
+// 그리는 순서(뒤→앞): 바다 → 원호 → 수면 아래 면 → 수면 위 면 → 수면선 → 네트워크
+function icebergArtEl(slideId, nodeCount) {
+  const svg = svgEl('svg', 'iceberg__art', {
+    viewBox: ICEBERG_ART.viewBox, 'aria-hidden': 'true', focusable: 'false',
+  });
+  appendIcebergSea(svg, slideId);
+  appendIcebergFacets(svg, 'below');
+  appendIcebergFacets(svg, 'above');
+  appendIcebergWaterline(svg);
+  appendIcebergNetwork(svg, nodeCount);
+  return svg;
+}
+
+function icebergAboveEl(items) {
+  const slots = ICEBERG_ABOVE_SLOTS[items.length] ?? [];
+  const list = el('ul', 'iceberg__above');
+  items.forEach((item, i) => {
+    const li = el('li', 'iceberg__item');
+    li.dataset.pos = String(i);
+    li.dataset.slot = String(slots[i] ?? i);
+    li.dataset.tone = pickAllowed(item.tone, ICEBERG_TONES);
+    appendIf(li, item.heading, (v) => textEl('h3', 'iceberg__heading', v));
+    appendIf(li, item.text, (v) => textEl('p', 'iceberg__text', v));
+    appendIf(li, item.example, (v) => textEl('p', 'iceberg__example', v));
+    list.appendChild(li);
+  });
+  return list;
+}
+
+function icebergBelowEl(items) {
+  const list = el('ul', 'iceberg__below');
+  items.forEach((item, i) => {
+    const li = el('li', 'iceberg__node');
+    li.dataset.pos = String(i);
+    appendIf(li, item.heading, (v) => textEl('h3', 'iceberg__node-heading', v));
+    appendIf(li, item.text, (v) => textEl('p', 'iceberg__node-text', v));
+    list.appendChild(li);
+  });
+  return list;
+}
+
+function icebergFlowEl(steps) {
+  const p = el('p', 'iceberg__flow');
+  steps.forEach((step, i) => {
+    if (i > 0) {
+      const arrow = el('span', 'iceberg__flow-arrow');
+      arrow.textContent = ICEBERG_FLOW_ARROW;
+      p.appendChild(arrow);
+    }
+    p.appendChild(textEl('span', 'iceberg__flow-step', step));
+  });
+  return p;
+}
+
+function icebergFlowSteps(flow) {
+  return (Array.isArray(flow) ? flow : [])
+    .slice(0, ICEBERG_FLOW_RANGE.max)
+    .filter((s) => (typeof s === 'string' || typeof s === 'number') && !isMissing(s))
+    .map(String);
+}
+
+function icebergFooterEl(data) {
+  const steps = icebergFlowSteps(data.flow);
+  if (!steps.length && isMissing(data.message)) return null;
+  const footer = el('div', 'iceberg__footer');
+  if (steps.length) footer.appendChild(icebergFlowEl(steps));
+  appendIf(footer, data.message, (v) => textEl('p', 'iceberg__message', v));
+  return footer;
+}
+
+function renderIceberg(data, root) {
+  const above = icebergList(data.above, ICEBERG_ABOVE_RANGE.max);
+  const below = icebergList(data.below, ICEBERG_BELOW_RANGE.max);
+  root.appendChild(titleEl(data.title));
+  appendIf(root, data.subtitle, subtitleEl);
+  const wrap = el('div', 'slide__iceberg');
+  wrap.dataset.aboveCount = String(above.length);
+  wrap.dataset.belowCount = String(below.length);
+  wrap.appendChild(icebergArtEl(data.id, below.length));
+  wrap.appendChild(icebergAboveEl(above));
+  wrap.appendChild(icebergBelowEl(below));
+  root.appendChild(wrap);
+  const footer = icebergFooterEl(data);
+  if (footer) root.appendChild(footer);
+}
+
+/* interview (v1.13) ------------------------------------------------------- */
+// DOM: .interview__media(img · credit) → (stepbar) → .interview__body(kicker → title → quote →
+// interviewee → insights → implication → source). stepbar·kicker·source는 공통 삽입 단계가 배치한다.
+
+function interviewInsights(list) {
+  return (Array.isArray(list) ? list : []).slice(0, INTERVIEW_INSIGHTS_RANGE.max).map(objectOr);
+}
+
+function interviewInsightEl(item) {
+  const li = el('li', 'interview__insight');
+  li.appendChild(textEl('h3', 'interview__insight-heading', item.heading));
+  appendIf(li, item.text, (v) => textEl('p', 'interview__insight-text', v));
+  return li;
+}
+
+function interviewInsightsEl(items) {
+  const ul = el('ul', 'interview__insights');
+  ul.dataset.count = String(items.length);
+  items.forEach((item) => ul.appendChild(interviewInsightEl(item)));
+  return ul;
+}
+
+function interviewBodyEl(data) {
+  const body = el('div', 'interview__body');
+  body.appendChild(titleEl(data.title));
+  body.appendChild(textEl('blockquote', 'interview__quote', data.quote));
+  appendIf(body, data.interviewee, (v) => textEl('p', 'interview__interviewee', v));
+  const insights = interviewInsights(data.insights);
+  if (insights.length) body.appendChild(interviewInsightsEl(insights));
+  appendIf(body, data.implication, (v) => textEl('p', 'interview__implication', v));
+  return body;
+}
+
+function renderInterview(data, root) {
+  const image = validImage(data.image);
+  if (image) root.appendChild(mediaEl('interview__media', 'interview__image', image, data.id));
+  root.appendChild(interviewBodyEl(data));
+}
+
+/* contrast (v1.14) ------------------------------------------------------- */
+// DOM: (stepbar) → (kicker) → h2.slide__title → .slide__contrast(.contrast__side[left] → [right]) → (source).
+// 각 side: label → headline → lines → stats → (v1.15) .contrast__media[data-count=1|2] > img.contrast__image[data-focus][data-fit] ×1~2 (v1.16). stepbar·kicker·source는 공통 삽입 단계가 배치한다.
+
+function contrastList(list, max) {
+  return (Array.isArray(list) ? list : []).slice(0, max);
+}
+
+function contrastLinesEl(lines) {
+  const ul = el('ul', 'contrast__lines');
+  lines.forEach((line) => appendIf(ul, line, (v) => textEl('li', 'contrast__line', v)));
+  return ul;
+}
+
+function contrastStatEl(stat) {
+  const data = objectOr(stat);
+  const li = el('li', 'contrast__stat');
+  appendIf(li, data.value, (v) => textEl('span', 'contrast__stat-value', v));
+  appendIf(li, data.label, (v) => textEl('span', 'contrast__stat-label', v));
+  return li;
+}
+
+function contrastStatsEl(stats) {
+  const ul = el('ul', 'contrast__stats');
+  stats.map(contrastStatEl).forEach((li) => { if (li.childNodes.length) ul.appendChild(li); });
+  ul.dataset.count = String(ul.children.length);
+  return ul;
+}
+
+function contrastSideEl(side, name, slideId) {
+  const data = objectOr(side);
+  const div = el('div', 'contrast__side');
+  div.dataset.side = name;
+  appendIf(div, data.label, (v) => textEl('p', 'contrast__label', v));
+  appendIf(div, data.headline, (v) => textEl('p', 'contrast__headline', v));
+  const lines = contrastList(data.lines, CONTRAST_MAX_LINES);
+  if (lines.length) {
+    const ul = contrastLinesEl(lines);
+    if (ul.children.length) div.appendChild(ul);
+  }
+  const stats = contrastList(data.stats, CONTRAST_MAX_STATS);
+  if (stats.length) {
+    const ul = contrastStatsEl(stats);
+    if (ul.children.length) div.appendChild(ul);
+  }
+  appendContrastImage(div, data.image, slideId);
+  return div;
+}
+
+// v1.16: side.image(객체 1개 또는 배열)를 유효한 사진 목록(최대 2개)으로 정규화한다.
+function contrastImages(image) {
+  const list = Array.isArray(image) ? image.slice(0, CONTRAST_MAX_IMAGES) : [image];
+  return list.map(validImage).filter(Boolean);
+}
+
+function contrastImageEl(image, slideId) {
+  const img = focusImageEl(image, 'contrast__image', slideId);
+  img.dataset.fit = pickAllowed(image.fit, CONTRAST_FITS);
+  return img;
+}
+
+// v1.15/v1.16: 유효한 사진이 있으면 side 맨 끝에 .contrast__media[data-count] > img.contrast__image(순서대로)를 붙인다.
+function appendContrastImage(div, image, slideId) {
+  const images = contrastImages(image);
+  if (!images.length) return;
+  const media = el('div', 'contrast__media');
+  media.dataset.count = String(images.length);
+  images.forEach((item) => media.appendChild(contrastImageEl(item, slideId)));
+  div.appendChild(media);
+  div.dataset.hasImage = '';
+}
+
+function renderContrast(data, root) {
+  root.appendChild(titleEl(data.title));
+  const wrap = el('div', 'slide__contrast');
+  CONTRAST_SIDES.forEach((name) => wrap.appendChild(contrastSideEl(data[name], name, data.id)));
+  root.appendChild(wrap);
+}
+
 const RENDERERS = {
   cover: renderCover,
   section: renderSection,
@@ -1832,6 +2292,9 @@ const RENDERERS = {
   pillars: renderPillars,
   roc: renderRoc,
   'data-panels': renderDataPanels,
+  iceberg: renderIceberg,
+  interview: renderInterview,
+  contrast: renderContrast,
 };
 
 /* 공통 필드 (kicker · source · step) -------------------------------------- */
@@ -1866,7 +2329,9 @@ function insertStepbar(data, root, steps) {
   const ol = el('ol', 'stepbar');
   ol.setAttribute('aria-label', '진행 단계');
   steps.forEach((label, i) => ol.appendChild(stepbarItemEl(label, i, current)));
-  root.prepend(ol);
+  const anchor = STEPBAR_AFTER[data.renderType] && root.querySelector(STEPBAR_AFTER[data.renderType]);
+  if (anchor) anchor.after(ol);
+  else root.prepend(ol);
 }
 
 // kicker는 첫 .slide__title 바로 앞에 둔다. 제목이 없으면 split__text 또는 슬라이드 맨 앞.
@@ -1909,7 +2374,9 @@ function insertBackground(data, root) {
 
 function appendSource(data, root) {
   if (NO_COMMON_SOURCE_TYPES.includes(data.renderType) || isMissing(data.source)) return;
-  root.appendChild(textEl('p', 'slide__source', data.source));
+  const selector = SOURCE_CONTAINER[data.renderType];
+  const container = (selector && root.querySelector(selector)) ?? root;
+  container.appendChild(textEl('p', 'slide__source', data.source));
 }
 
 /* ------------------------------------------------------------------ */
@@ -2513,7 +2980,161 @@ function validateDataPanels(slide, label) {
   validateDpanelLink(slide.link, label);
 }
 
+/* iceberg (v1.12) 검증 */
+
+// 배열 필드의 개수·항목 필수 heading·글자 수를 검사한다.
+function validateIcebergItems(slide, label, field, range, limits) {
+  if (!warnArrayField(slide, label, field)) return;
+  const list = slide[field];
+  warnRange(label, field, list.length, range);
+  if (list.length > range.max) console.warn(`[slides] ${label}: ${field}는 앞의 ${range.max}개만 표시합니다.`);
+  list.forEach((item, i) => {
+    const data = objectOr(item);
+    const name = `${label} ${field}[${i}]`;
+    if (isMissing(data.heading)) console.warn(`[slides] ${name}: 필수 필드 "heading" 누락`);
+    warnTextLimits(data, name, limits);
+    if (field === 'above') warnAllowed(name, 'tone', data.tone, ICEBERG_TONES);
+  });
+}
+
+function validateIcebergFlow(slide, label) {
+  if (slide.flow == null || !warnArrayField(slide, label, 'flow')) return;
+  warnRange(label, 'flow', slide.flow.length, ICEBERG_FLOW_RANGE);
+  slide.flow.forEach((step, i) => {
+    if (typeof step !== 'string') console.warn(`[slides] ${label}: flow[${i}]는 문자열이어야 합니다.`);
+    else if (step.length > ICEBERG_LIMITS.flowStep) {
+      console.warn(`[slides] ${label}: flow[${i}] ${step.length}자 — ${ICEBERG_LIMITS.flowStep}자 이내여야 합니다.`);
+    }
+  });
+}
+
+function validateIceberg(slide, label) {
+  validateIcebergItems(slide, label, 'above', ICEBERG_ABOVE_RANGE, ICEBERG_LIMITS.above);
+  validateIcebergItems(slide, label, 'below', ICEBERG_BELOW_RANGE, ICEBERG_LIMITS.below);
+  validateIcebergFlow(slide, label);
+  // background는 normalizeBackground가 허용 타입 검사로 경고·무시한다.
+  if (slide.image != null) console.warn(`[slides] ${label}: iceberg 타입은 image를 쓰지 않습니다 — 무시합니다.`);
+}
+
+/* interview (v1.13) 검증 */
+
+function validateInterviewImage(slide, label) {
+  if (slide.image == null || !validateImageObject(slide.image, label, 'image')) return;
+  const src = String(slide.image.src);
+  if (!INTERVIEW_IMAGE_PATTERN.test(src) || src.includes('..')) {
+    console.warn(`[slides] ${label}: image.src는 assets/images/ 아래 로컬 상대 경로여야 합니다: "${src}"`);
+  }
+}
+
+function validateInterviewInsights(slide, label) {
+  if (slide.insights == null || !warnArrayField(slide, label, 'insights')) return;
+  const { max } = INTERVIEW_INSIGHTS_RANGE;
+  warnRange(label, 'insights', slide.insights.length, INTERVIEW_INSIGHTS_RANGE);
+  if (slide.insights.length > max) console.warn(`[slides] ${label}: insights는 앞의 ${max}개만 표시합니다.`);
+  slide.insights.forEach((item, i) => {
+    const data = objectOr(item);
+    const name = `${label} insights[${i}]`;
+    if (isMissing(data.heading)) console.warn(`[slides] ${name}: 필수 필드 "heading" 누락`);
+    warnTextLimits(data, name, INTERVIEW_LIMITS.insight);
+  });
+}
+
+function validateInterview(slide, label) {
+  validateInterviewImage(slide, label);
+  validateInterviewInsights(slide, label);
+  // background는 normalizeBackground가 허용 타입 검사로 경고·무시한다.
+}
+
+/* contrast (v1.14) 검증 */
+
+function validateContrastHeadline(headline, name) {
+  if (typeof headline !== 'string') return;
+  const lineCount = headline.split('\n').length;
+  if (lineCount > CONTRAST_HEADLINE_MAX_LINES) {
+    console.warn(`[slides] ${name}: headline ${lineCount}줄 — ${CONTRAST_HEADLINE_MAX_LINES}줄 이내여야 합니다.`);
+  }
+}
+
+function validateContrastStats(side, name) {
+  if (side.stats == null || !warnArrayField(side, name, 'stats')) return;
+  if (side.stats.length > CONTRAST_MAX_STATS) {
+    console.warn(`[slides] ${name}: stats ${side.stats.length}개 — 최대 ${CONTRAST_MAX_STATS}개입니다. 앞의 ${CONTRAST_MAX_STATS}개만 표시합니다.`);
+  }
+  side.stats.forEach((stat, i) => {
+    const data = objectOr(stat);
+    const statName = `${name} stats[${i}]`;
+    ['value', 'label'].filter((f) => isMissing(data[f]))
+      .forEach((f) => console.warn(`[slides] ${statName}: 필수 필드 "${f}" 누락`));
+    warnTextLimits(data, statName, CONTRAST_LIMITS.stat);
+  });
+}
+
+function validateContrastLines(side, name) {
+  if (side.lines == null || !warnArrayField(side, name, 'lines')) return;
+  warnStringList(side.lines, name, 'lines', CONTRAST_MAX_LINES, CONTRAST_LIMITS.line);
+  if (side.lines.length > CONTRAST_MAX_LINES) console.warn(`[slides] ${name}: lines는 앞의 ${CONTRAST_MAX_LINES}개만 표시합니다.`);
+}
+
+function validateContrastSide(side, label, key) {
+  const name = `${label} ${key}`;
+  if (side == null) return; // 누락은 REQUIRED_FIELDS가 경고한다.
+  if (typeof side !== 'object' || Array.isArray(side)) {
+    console.warn(`[slides] ${name}: 객체여야 합니다.`);
+    return;
+  }
+  if (isMissing(side.headline)) console.warn(`[slides] ${name}: 필수 필드 "headline" 누락`);
+  // headline 글자 수는 줄바꿈·** 표시를 뺀 실제 표시 글자로 센다.
+  const visible = typeof side.headline === 'string' ? { ...side, headline: side.headline.replace(/\*\*|\n/g, '') } : side;
+  warnTextLimits(visible, name, CONTRAST_LIMITS.side);
+  validateContrastHeadline(side.headline, name);
+  validateContrastLines(side, name);
+  validateContrastStats(side, name);
+  validateContrastImage(side, name);
+}
+
+// v1.15: side.image — assets/images/ 로컬 경로, alt 필수 (경고 후 렌더링은 계속)
+// v1.16: 객체 1개 또는 최대 2개 배열. 각 항목 fit은 "cover" | "contain".
+function validateContrastImage(side, name) {
+  if (side.image == null) return;
+  if (!Array.isArray(side.image)) {
+    validateContrastImageItem(side.image, name, 'image');
+    return;
+  }
+  if (side.image.length > CONTRAST_MAX_IMAGES) {
+    console.warn(`[slides] ${name}: image ${side.image.length}개 — 최대 ${CONTRAST_MAX_IMAGES}개입니다. 앞의 ${CONTRAST_MAX_IMAGES}개만 표시합니다.`);
+  }
+  if (!side.image.length) console.warn(`[slides] ${name}: image 배열이 비어 있습니다 — 사진 없이 표시합니다.`);
+  side.image.forEach((item, i) => validateContrastImageItem(item, name, `image[${i}]`));
+}
+
+function validateContrastImageItem(image, name, field) {
+  if (!validateImageObject(image, name, field)) return;
+  const src = String(image.src);
+  if (!INTERVIEW_IMAGE_PATTERN.test(src) || src.includes('..')) {
+    console.warn(`[slides] ${name}: ${field}.src는 assets/images/ 아래 로컬 상대 경로여야 합니다: "${src}"`);
+  }
+  warnAllowed(name, `${field}.fit`, image.fit, CONTRAST_FITS);
+}
+
+// 양쪽 사진은 모두 넣거나 모두 뺀다 (3.24 v1.15). v1.16 배열도 유효 항목이 1개 이상이면 '사진 있음'.
+function warnContrastImagePair(slide, label) {
+  const withImage = CONTRAST_SIDES.filter((key) => contrastImages(objectOr(slide[key]).image).length > 0);
+  if (withImage.length === 1) {
+    console.warn(`[slides] ${label}: contrast 사진이 ${withImage[0]} 쪽에만 있습니다 — 양쪽 모두 넣거나 모두 빼야 합니다.`);
+  }
+}
+
+function validateContrast(slide, label) {
+  CONTRAST_SIDES.forEach((key) => validateContrastSide(slide[key], label, key));
+  warnContrastImagePair(slide, label);
+  // background는 normalizeBackground가 허용 타입 검사로 경고·무시한다.
+  if (slide.image != null) console.warn(`[slides] ${label}: contrast 타입은 image를 쓰지 않습니다 — 무시합니다.`);
+}
+
 const TYPE_VALIDATORS = {
+  contrast: validateContrast,
+  interview: validateInterview,
+  iceberg: validateIceberg,
   tree: validateTree,
   cover: validateCover,
   references: validateReferences,
@@ -2741,6 +3362,7 @@ function goTo(index) {
   syncHash();
   updateNotesWindow();
   drawTreesIn(state.elements[state.current]); // 숨김 중 측정하지 못한 선을 활성화 시 다시 그린다
+  measureBaselineTagsIn(state.elements[state.current]); // 기준선 라벨 pill 실측(숨김 중 0이었으면 여기서 보정)
 }
 
 const next = () => goTo(state.current + 1);
@@ -2848,6 +3470,7 @@ function onBeforePrint() {
   state.printing = true;
   clearScale();
   drawTreesIn(dom.deck); // 인쇄 레이아웃 기준으로 모든 tree 선을 다시 그린다
+  measureBaselineTagsIn(dom.deck);
 }
 
 function onAfterPrint() {
@@ -2897,6 +3520,8 @@ async function init() {
     applyScale();
     goTo(indexFromHash());
     observeTrees();
+    measureBaselineTagsIn(dom.deck);
+    document.fonts?.ready.then(() => measureBaselineTagsIn(dom.deck)); // 웹폰트 적용 후 폭 재측정
   } catch (error) {
     showError(error);
   }

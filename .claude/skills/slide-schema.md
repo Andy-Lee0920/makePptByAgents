@@ -6,6 +6,11 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 # Slide Schema 표준 (v1.5)
 
 > v1.6 추가(하위 호환, `version`은 "1.5" 유지 가능): `chart.baseline` 기준선 선택 필드와 `.chart__baseline`·`.chart__baseline-label` 클래스(3.12, 6절). 메인 세션 승인(사용자 요청: 9장 '찍기 50점 기준선'). 새 타입 `tree`(갈림길 나무, 3.18) — 사용자 승인(10장 새 포맷).
+> v1.16 추가(하위 호환): `contrast` 각 쪽 `image`에 최대 2개 배열·`fit` 허용(3.24) — 사용자 승인(3장 로고 2개).
+> v1.15 추가(하위 호환): `contrast` 각 쪽에 선택 필드 `image`(3.24) — 사용자 승인(3장 사진 2장).
+> v1.14 추가(하위 호환): 새 타입 `contrast`(3.24) — 사용자 승인(3장 레퍼런스 references/3pg_slide_concept.png).
+> v1.13 추가(하위 호환): 새 타입 `interview`(3.23) — 사용자 승인(현직자 인터뷰 장, references/16pg_slide_shadow_interview.png).
+> v1.12 추가(하위 호환): 새 타입 `iceberg`(3.22) — 사용자 승인(5장 레퍼런스 references/5pg_slide_concept.png).
 > v1.9 추가(하위 호환): 새 타입 `data-panels`(3.21) — 사용자 승인(6·7장 사이 데이터 설명 장 2개).
 > v1.8 추가(하위 호환): 새 타입 `roc`(3.20) — 사용자 승인(9장 레퍼런스 references/roc_slide_9pg.html).
 > v1.7 추가(하위 호환): `chart.kind: "hbar"`, `process.layout: "stairs"`, 새 타입 `equation`·`pillars`(3.19) — 사용자 승인(1:1:1 반복 구조 대체).
@@ -46,7 +51,7 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 
 | 필드 | 타입 | 필수 | 설명 |
 |---|---|---|---|
-| `version` | string | ✅ | 스키마 버전. 현재 `"1.5"` (`"1.0"`~`"1.4"`도 허용) |
+| `version` | string | ✅ | 스키마 버전. 현재 `"1.16"` (`"1.0"`~`"1.15"`도 허용) |
 | `meta.title` | string | ✅ | 발표 제목 (브라우저 `<title>`에도 사용) |
 | `meta.author` | string | ⬜ | 발표자 |
 | `meta.date` | string | ⬜ | `YYYY-MM-DD` |
@@ -389,6 +394,66 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 - 배치: 4열(출발점 | 첫 번째 질문의 답 2개 | 두 번째 질문의 답 4개 | 결과 4개). `levels[0]`은 2열 위, `levels[1]`은 3열 위에 열 머리글(질문 + 징후)로 표시. 갈래는 선(연결선)으로 잇는다.
 - 사진·`background` 사용 금지.
 
+### 3.24 `contrast` — 떠나는 것 vs 남는 것 (v1.14, 사용자 승인: references/3pg_slide_concept.png)
+좌우 대비 장. 왼쪽(종이 바탕, x 80~880)에 '떠나는 것', 오른쪽에 캔버스 오른쪽·아래 가장자리까지 꽉 찬 짙은 초록 블록(x 960~1920, 제목 아래 y≈260~1080, 안전 영역 예외)에 '남는 것'. 양쪽 모두 작은 라벨 → 세리프 대형 헤드라인(2줄) → 보조 내용 순서. 왼쪽 헤드라인은 차분한 회색 톤, 오른쪽은 흰색(강조 단어는 밝은 초록).
+```json
+{ "id": "what-remains", "type": "contrast", "step": 1, "kicker": "…", "title": "그러나, 올리브영에게 남은 것은?",
+  "left":  { "label": "떠나는 것", "headline": "브랜드는
+떠나도", "lines": ["해외 유통사로 직접 입점", "예: 얼타에 K-뷰티 8개 브랜드 (2025.7)"] },
+  "right": { "label": "남는 것", "headline": "**Data**는
+남는다",
+             "stats": [ { "value": "1,700만+", "label": "내국인 온라인 회원" }, { "value": "6주", "label": "중소 브랜드 매장 테스트" } ] },
+  "source": "출처: …" }
+```
+필수: `title`, `left`·`right`(각 `headline` 필수) / 선택: `kicker`, `step`, `source`, 각 쪽 `label`, `lines`(최대 3개), `stats`(최대 3개, 각 `value`·`label`)
+- 오른쪽 `headline`의 `**굵게**`는 밝은 강조색(예: 연초록), 왼쪽은 강조색. `
+` 줄바꿈 허용.
+- `background` 사용 금지. `source`는 박스 아래 표준 각주 위치.
+- v1.15: 각 쪽에 선택 필드 `image` `{ "src", "alt", "focus" }`(`assets/images/` 로컬, `alt` 필수). 박스 하단 약 30~35% 영역에 놓이며, 양쪽 사진은 같은 크기·비율로 맞춘다(designer). 한쪽에만 넣지 말고 양쪽 모두 넣거나 모두 뺀다.
+- v1.16: `image`는 객체 1개 또는 최대 2개 배열도 허용. 배열이면 같은 미디어 영역 안에 위·아래로 같은 높이로 쌓는다(로고 등). 각 항목에 선택 필드 `fit`: `"cover"`(기본, 사진) | `"contain"`(로고 — 잘리지 않게 전체 표시).
+
+### 3.23 `interview` — 현직자 인터뷰 (v1.13, 사용자 승인: references/16pg_slide_shadow_interview.png)
+에디토리얼 커버 스타일. 왼쪽 약 40%(캔버스 0~768px)에 사진이 위·아래·왼쪽 가장자리까지 꽉 차고(안전 영역 예외), 오른쪽 약 60%에 머리글 → 제목 → 인용문(가장 강조) → 출처(인터뷰 대상) → 인사이트 2개(가로 2열) → 사업적 시사점(하단) 순서로 놓인다. 인물 얼굴 사진은 쓰지 않고 그림자·실루엣이 흐린 사진만 쓴다.
+```json
+{ "id": "interview", "type": "interview", "step": 4, "kicker": "현직자 인터뷰", "title": "…",
+  "image": { "src": "assets/images/photos/interview-shadow.png", "alt": "…", "focus": "center" },
+  "quote": "…", "interviewee": "K-뷰티 브랜드 해외사업 담당자 (익명)",
+  "insights": [ { "heading": "…", "text": "…" }, { "heading": "…", "text": "…" } ],
+  "implication": "…", "source": "…" }
+```
+필수: `title`, `image`(`src`·`alt`), `quote`, `interviewee` / 선택: `kicker`, `step`, `insights`(0~2개, 각 `heading` 필수·`text` 선택), `implication`, `source`, `image.credit`·`focus`
+- `quote`·`implication`의 `**굵게**`는 강조색. 인용 부호(“ ”)는 CSS/마크업이 붙이므로 데이터에 넣지 않는다.
+- `background` 사용 금지. (v1.12, 사용자 승인: references/5pg_slide_concept.png)
+수면 위에 "눈에 보이는 사업"(2~4개)을, 수면 아래에 그 사업이 쌓아 주는 "보이지 않는 가치"(3~5개, 네트워크처럼 연결)를 놓는 빙산 다이어그램. 맨 아래에 흐름 한 줄과 결론 문장.
+```json
+{ "id": "how-a-then-b", "type": "iceberg", "step": 1, "kicker": "…", "title": "작은 것부터 시작해서, **Signal**을 찾다",
+  "subtitle": "눈에 보이는 사업에서 시작해, …",
+  "above": [
+    { "heading": "해외 진출 지원", "text": "국내 브랜드의 해외 진출 길잡이", "example": "예시: Amazon 미국에서 통할 제품 리포트", "tone": "accent" },
+    { "heading": "데이터 축적", "text": "Data와 실적 쌓기", "example": "신호가 맞으면 다음 단계로 확장" },
+    { "heading": "시장 정보 제공", "text": "…", "example": "…" },
+    { "heading": "글로벌 브랜드 연결", "text": "…" } ],
+  "below": [
+    { "heading": "DATA", "text": "해외 진출 데이터" },
+    { "heading": "PERFORMANCE", "text": "브랜드별 실적 및 성과" },
+    { "heading": "MARKET INTELLIGENCE", "text": "…" },
+    { "heading": "OPPORTUNITIES" },
+    { "heading": "GLOBAL NETWORK", "text": "…" } ],
+  "flow": ["Data", "Insight", "Opportunity", "Global Network"],
+  "message": "**작은 사업**이 **더 큰 사업적 가치**를 만듭니다." }
+```
+필수: `title`, `above`(2~4개, 각 `heading` 필수), `below`(3~5개, 각 `heading` 필수) / 선택: `kicker`, `step`, `subtitle`, `above[].text`·`example`·`tone`(`"default"` | `"accent"`), `below[].text`, `flow`(2~5개 문자열), `message`, `source`
+- `title`·`subtitle`·`message`의 `**굵게**`는 강조색으로 표시한다(designer).
+- 사진·`background` 사용 금지. 빙산·수면·네트워크 점과 선은 developer가 인라인 SVG로 그리고(인라인 색 금지, 클래스만), 색·음영은 designer가 지정한다.
+- **배치 기준 좌표(캔버스 1920×1080, developer SVG와 designer 라벨 배치의 공통 기준)**
+  - 제목 영역: 왼쪽 위 안전 영역(x 80~900, y 80~300).
+  - 수면선: y = 500, 캔버스 좌우 가장자리까지(안전 영역 예외). 수면 아래(y 500~1080)는 바다 면.
+  - 수면 위 빙산: 밑변 x 470~1520(y 500), 큰 봉우리 (1180, 290), 작은 봉우리 (900, 360). 여러 면(facet)으로 나뉜 각진 형태.
+  - 수면 아래 빙산: (470,500) → (620,650) → (830,820) → (960,860) → (1130,800) → (1360,660) → (1520,500). 바닥 꼭짓점 y ≤ 860.
+  - `above` 라벨 위치(`data-pos` = 배열 순서, 개수별): 4개 → 0: 빙산 왼쪽 수면 위(중심 x≈500, y 330~480) · 1: 빙산 몸체 위 왼쪽(중심 x≈880, y 380~490) · 2: 큰 봉우리 위(중심 x≈1180, y 110~270) · 3: 빙산 오른쪽 수면 위(중심 x≈1640, y 330~480). 3개면 0·2·3 위치, 2개면 0·3 위치를 쓴다(`data-slot`에 실제 위치 번호).
+  - `below` 노드 중심(`data-pos` = 배열 순서): 0 (960, 570) · 1 (720, 650) · 2 (1240, 640) · 3 (1210, 745) · 4 (960, 790). 3개면 0·1·2, 4개면 0~3 위치. 노드 사이를 가는 선으로 잇고 장식용 작은 점을 흩뿌린다.
+  - 하단: `flow` y≈900~945, `message` y≈955~1000 (가운데 정렬, 안전 영역 하단 1000 이내). `source`가 있으면 `message`와 겹치지 않게 designer가 조정.
+
 ## 4. 분량 제한 (16:9 넘침 방지)
 
 | 항목 | 제한 |
@@ -414,6 +479,10 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 | `band` | `items` 2~4개 / `heading` 16자 / `text` 50자 / `bullets` 최대 3개·각 50자 / `body` 100자 / `title` 1줄 권장(32자) |
 | `background` 사용 시 | 해당 타입 분량 제한 그대로, 단 `bullets`는 최대 4개 |
 | `split` | `bullets` 최대 4개·각 50자 / `body` 120자 |
+| `contrast` | `label` 10자 / `headline` 16자(`
+` 포함 2줄) / `lines` 최대 3개·각 30자 / `stats` 최대 3개: `value` 8자, `label` 16자 |
+| `interview` | `title` 40자 / `quote` 90자 / `interviewee` 30자 / `insights` 최대 2개: `heading` 16자, `text` 50자 / `implication` 60자 |
+| `iceberg` | `subtitle` 60자(2줄) / `above` 2~4개: `heading` 12자, `text` 26자, `example` 30자 / `below` 3~5개: `heading` 20자(영문 대문자 권장), `text` 24자 / `flow` 2~5개·각 16자 / `message` 40자 |
 | `tree` | `root` 12자 / `levels[].question` 20자 / `levels[].signal` 30자 / 갈래 `label` 10자 / `leaf` 14자 / `caption` 60자 |
 | `references` 항목 `title` | 70자 이내 (넘으면 원문 제목을 줄이고 끝에 `…`) |
 | `references` 항목 `url` | 길이 제한 없음 (화면에서는 한 줄로 말줄임 처리) |
@@ -454,7 +523,7 @@ developer는 아래 구조로 마크업을 생성하고, designer는 이 클래�
 | `.cover__media`, `.cover__image`, `.cover__overlay` | cover 대표 이미지 영역·이미지·가독성 막. 슬라이드에 `data-has-image`, `data-image-style="full|split"`, `data-overlay="dark|light|none"` 속성. 이미지에 `data-focus` 속성. DOM 순서는 `.cover__media`(이미지·막·credit) → 텍스트(title·subtitle·meta) |
 | `.slide__bignumber`, `.bignumber__value`, `.bignumber__label`, `.bignumber__context` | big-number |
 | `.slide__process`(`ol`), `.step`, `.step__index`, `.step__label`, `.step__text` | process. `.step__index`는 01, 02… 번호 |
-| `.chart__baseline`(`line`), `.chart__baseline-label`(`text`) | chart 기준선(v1.6, `chart.baseline`). 막대·값 라벨보다 위에 그린다. 색·점선은 designer가 지정 |
+| `.chart__baseline`(`line`), `.chart__baseline-label`(`text`), `.chart__baseline-tag`(`g`) > `.chart__baseline-tag-bg`(`rect`, v1.12) | chart 기준선(v1.6, `chart.baseline`). v1.12: 라벨은 `g.chart__baseline-tag` 안에 배경 `rect`(텍스트 크기에 맞춤) → `text` 순서. `text.chart__label`에 `data-highlight="true|false"`. 막대·값 라벨보다 위에 그린다. 색·점선은 designer가 지정 |
 | `.slide__chart`(`figure`), `.chart`(`svg`), `.chart__axis`, `.chart__bar`, `.chart__bar--highlight`, `.chart__line`, `.chart__point`, `.chart__point--highlight`, `.chart__value`, `.chart__label`, `.chart__unit`, `.slide__caption` | chart. SVG 요소에 색·폰트를 인라인으로 지정하지 않고 클래스만 부여한다(색은 designer가 `fill`/`stroke`로 지정) |
 | `.slide__table`(`table`), `.table__corner`, `.table__colhead`, `.table__rowhead`, `.table__cell`, `.is-highlight` | comparison. 강조 열의 `th`·`td`에 `.is-highlight` |
 | `.split__text`, `.split__media` | split 좌우 영역. 슬라이드에 `data-image-side="left|right"`, 이미지가 있으면 `data-has-image` 속성 |
@@ -474,6 +543,9 @@ developer는 아래 구조로 마크업을 생성하고, designer는 이 클래�
 | `.slide__pillars`, `.pillars__columns`(`data-count`), `.pillar`(`data-tone`), `.pillars__base`, `.pillar__label`, `.pillar__value`, `.pillar__title`, `.pillar__text` | pillars(v1.7). `.pillars__columns` 안에 `.pillar` 2~3개, 그 아래 `.pillars__base`(전체 폭). base 내부도 `.pillar__label/value/title/text` 클래스를 재사용 |
 | `.slide__roc`, `.roc__chart`(`figure`), `svg.roc`, `.roc__area`, `.roc__grid`, `.roc__frame`, `.roc__chance`, `.roc__chance-label`, `.roc__curve[data-style="lead|alt|dim"]`, `.roc__tick`, `.roc__axis`, `.roc__lead`, `.roc__marker[data-style="filled|hollow"]`, `.roc__note-heading`, `.roc__note`, `.roc__note-label`, `.roc__aside`, `.roc__models`(`ul`), `.roc__model[data-style]`, `.roc__swatch`(`svg`) > `.roc__swatch-line`, `.roc__name`, `.roc__desc`, `.roc__auc`, `.roc__ci`, `.roc__takeaways`, `.roc__takeaway` | roc(v1.8). 2열: 왼쪽 `.roc__chart`, 오른쪽 `.roc__aside`(models → takeaways). 인라인 색 금지 |
 | `.slide__data-panels`(`data-has-link`), `.dpanel`(`data-tone="primary|secondary"`), `.dpanel__head`, `.dpanel__heading`, `.dpanel__meta`, `.dpanel__stats`(`data-count`), `.dpanel__stat`, `.dpanel__stat-value`, `.dpanel__stat-label`, `.dpanel__message`, `.dpanel__chart-title`, `.dpanel__figure`, `.dpanel__image`, `.dpanel__fields`, `.dpanel__fields-label`, `.dpanel__link`, `.dpanel__link-badge`, `.dpanel__link-value`, `.dpanel__link-label`, `.dpanel__link-note` | data-panels(v1.9). 순서: 패널1 → (link) → 패널2. 패널 내부: head(heading·meta) → stats → message → chart-title → figure(img.dpanel__image) → fields |
+| `.slide__iceberg`(`data-above-count`, `data-below-count`), `svg.iceberg__art`, `.iceberg__sea`, `.iceberg__waterline`, `.iceberg__facet`(`data-part="above|below"`, `data-shade="1~5"`), `.iceberg__link`(`line`), `.iceberg__dot`(`circle`, `data-size="s|m"`), `.iceberg__above`(`ul`), `.iceberg__item`(`data-pos`, `data-slot`, `data-tone`), `.iceberg__heading`, `.iceberg__text`, `.iceberg__example`, `.iceberg__below`(`ul`), `.iceberg__node`(`data-pos`), `.iceberg__node-heading`, `.iceberg__node-text`, `.iceberg__footer`, `.iceberg__flow`(`p`) > `.iceberg__flow-step` + `.iceberg__flow-arrow`, `.iceberg__message` | iceberg(v1.12). DOM: stepbar → kicker → title → subtitle → `.slide__iceberg`(svg → above → below) → `.iceberg__footer`(flow → message) → source. `svg.iceberg__art`는 viewBox `0 0 1920 1080`, 캔버스 전체(0,0)에 깔리는 장식층(`aria-hidden`). 그라데이션이 필요하면 `<defs>` 안 `stop.iceberg__stop`에 `data-stop` 속성만 두고 색은 CSS `stop-color`로. 라벨·노드는 3.22 좌표에 맞춰 designer가 absolute 배치 |
+| `.slide__contrast`, `.contrast__side`(`data-side="left|right"`), `.contrast__label`, `.contrast__headline`, `.contrast__lines`(`ul`), `.contrast__line`, `.contrast__stats`(`ul`, `data-count`), `.contrast__stat`, `.contrast__stat-value`, `.contrast__stat-label` | contrast(v1.14). DOM: stepbar → kicker → title → `.slide__contrast`(`.contrast__side[data-side=left]` → `.contrast__side[data-side=right]`; 각 side: label → headline → lines → stats → (v1.15) `.contrast__media` > `img.contrast__image[data-focus]`; 사진이 있으면 side에 `data-has-image`. v1.16: 배열이면 `.contrast__media[data-count="2"]` 안에 `img.contrast__image`가 순서대로 2개, 각 img에 `data-fit="cover|contain"`) → source. 인라인 색 금지 |
+| `.interview__media`, `.interview__image`(`data-focus`), `.slide__credit`, `.interview__body`, `.interview__quote`(`blockquote`), `.interview__interviewee`, `.interview__insights`(`ul`, `data-count`), `.interview__insight`, `.interview__insight-heading`, `.interview__insight-text`, `.interview__implication` | interview(v1.13). DOM: `.interview__media`(img·credit) → stepbar → `.interview__body`(kicker → title → quote → interviewee → insights → implication → source). 인라인 색 금지 |
 | `.progress`, `.page-number` | 진행 표시줄 / 페이지 번호 |
 | `.progress__bar` | 진행 표시줄 내부 채움 막대 (JS가 `width`를 % 로 설정) |
 | `.nav`, `.nav__button`, `.nav__button--prev`, `.nav__button--next` | 하단 화살표 내비게이션 (`<button>`, 캔버스 밖 `.deck` 위에 고정). 첫/마지막 슬라이드에서 `disabled` 속성 부여 |
