@@ -1,0 +1,182 @@
+/* ==========================================================================
+   motion.css — 슬라이드 전환 · 빌드 애니메이션 (animator 소유)
+
+   원칙
+   - 이 파일에는 움직임(시간 · 이징 · 변위 · 투명도)만 둔다. 색 · 폰트는 theme.css 토큰.
+   - .slide 자체의 transform / transform-origin은 절대 건드리지 않는다
+     (뷰어가 인라인 translate + scale로 16:9 캔버스를 맞춘다).
+   - 숨김 상태를 CSS 규칙으로 두지 않는다. 모든 키프레임은 "시작 상태(from)"만 갖고,
+     motion.js가 요소에 인라인 animation(fill-mode: backwards)을 걸 때만 적용된다.
+     → JS가 실패하거나 애니메이션이 꺼져도 최종 상태(theme.css 레이아웃)가 그대로 보인다.
+   - 개별 변환 속성(translate / scale)만 움직여 theme.css의 transform과 합성한다
+     (예: translateX(-50%) 배치, hbar의 scaleY(1.5)를 덮어쓰지 않음).
+   - 끝 상태(to)를 명시하는 키프레임은 끝난 뒤 theme 값으로 돌아가도 화면이 같아지는
+     값만 둔다(clip-path inset(0), dashoffset 0, 같은 transform-origin).
+   ========================================================================== */
+
+:root {
+  --motion-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --motion-rise: 14px;
+  --motion-rise-sm: 8px;
+  --motion-zoom: 1.04;
+  --motion-pop: 0.5;
+  --motion-kenburns: 1.03;
+}
+
+/* ---- 기본: 페이드 · 떠오름 ---------------------------------------------- */
+@keyframes m-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes m-rise {
+  from {
+    opacity: 0;
+    translate: 0 var(--motion-rise);
+  }
+}
+
+@keyframes m-rise-sm {
+  from {
+    opacity: 0;
+    translate: 0 var(--motion-rise-sm);
+  }
+}
+
+/* ---- 프레지식: 내부 콘텐츠가 1.04 → 1, 방향키 방향으로 미세 패닝 ------------
+   --m-origin: 캔버스 중심을 요소 좌표로 환산한 값(JS가 계산) → 장 전체가 한 점에서 줌
+   --m-pan: 앞으로 가면 +, 뒤로 가면 − (px)                                   */
+@keyframes m-zoom {
+  from {
+    opacity: 0;
+    scale: var(--motion-zoom);
+    translate: var(--m-pan, 0px) 0;
+    transform-origin: var(--m-origin, 50% 50%);
+  }
+  to {
+    transform-origin: var(--m-origin, 50% 50%);
+  }
+}
+
+/* 전면 사진: 투명도는 슬라이드 페이드에 맡기고 크기 · 위치만 */
+@keyframes m-zoom-media {
+  from {
+    scale: var(--motion-zoom);
+    translate: calc(var(--m-pan, 0px) * 0.5) 0;
+  }
+}
+
+/* 사진 켄번스: 1.03 → 1 (최종 상태 = theme 레이아웃) */
+@keyframes m-kenburns {
+  from {
+    scale: var(--motion-kenburns);
+  }
+}
+
+/* ---- 팝 (점 · 마커 · 배지) — SVG는 자기 상자 중심 기준 ------------------- */
+@keyframes m-pop {
+  from {
+    opacity: 0;
+    scale: var(--motion-pop);
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+  to {
+    transform-box: fill-box;
+    transform-origin: 50% 50%;
+  }
+}
+
+/* ---- 막대: 기준선에서 자라남 -------------------------------------------- */
+/* 가로 막대(hbar): 왼쪽 기준선에서 오른쪽으로. theme의 scaleY(1.5)와 합성,
+   세로 기준점(50%)은 theme과 같아 끝난 뒤에도 픽셀이 같다. */
+@keyframes m-grow-x {
+  from {
+    scale: 0 1;
+    transform-box: fill-box;
+    transform-origin: 0% 50%;
+  }
+  to {
+    transform-box: fill-box;
+    transform-origin: 0% 50%;
+  }
+}
+
+/* 세로 막대: 아래 기준선에서 위로 */
+@keyframes m-grow-y {
+  from {
+    scale: 1 0;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+  to {
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+  }
+}
+
+/* 값 라벨이 막대 끝을 따라 이동 (--m-dx / --m-dy: 막대 길이만큼 되돌린 위치) */
+@keyframes m-ride {
+  from {
+    opacity: 0;
+    translate: var(--m-dx, 0px) var(--m-dy, 0px);
+  }
+  20% {
+    opacity: 1;
+  }
+}
+
+/* ---- 선 그리기 (단색 실선: dasharray = 길이) ---------------------------- */
+@keyframes m-draw {
+  from {
+    stroke-dasharray: var(--m-len);
+    stroke-dashoffset: var(--m-len);
+  }
+  to {
+    stroke-dasharray: var(--m-len);
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---- 닦아내기(wipe) — 점선 곡선 · 연결선 묶음 · 이미지 그래프 · 계단 ------- */
+@keyframes m-wipe-x {
+  from {
+    clip-path: inset(-12px 100% -12px -12px);
+  }
+  to {
+    clip-path: inset(-12px -12px -12px -12px);
+  }
+}
+
+@keyframes m-wipe-up {
+  from {
+    clip-path: inset(100% -2px 0 -2px);
+  }
+  to {
+    clip-path: inset(-8px -2px 0 -2px);
+  }
+}
+
+/* ==========================================================================
+   접근성: 모션 감소 — 빌드 없이 최종 상태 (motion.js는 슬라이드 짧은 페이드만 건다)
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .slide[data-motion] * {
+    animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   인쇄 / PDF: 모든 애니메이션 · 전환을 끄고 최종 상태로 고정
+   (motion.js도 beforeprint에서 카운트업 문자열을 원래 값으로 되돌린다)
+   ========================================================================== */
+@media print {
+  .slide,
+  .slide *,
+  .slide *::before,
+  .slide *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
