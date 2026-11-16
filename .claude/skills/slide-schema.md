@@ -6,6 +6,9 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 # Slide Schema 표준 (v1.5)
 
 > v1.6 추가(하위 호환, `version`은 "1.5" 유지 가능): `chart.baseline` 기준선 선택 필드와 `.chart__baseline`·`.chart__baseline-label` 클래스(3.12, 6절). 메인 세션 승인(사용자 요청: 9장 '찍기 50점 기준선'). 새 타입 `tree`(갈림길 나무, 3.18) — 사용자 승인(10장 새 포맷).
+> v1.19 추가(하위 호환): roadmap 열 머리글 내부 구조(`.colhead__card` > step·name·period, 3.13) — 사용자 승인(15장 chevron 헤더).
+> v1.18 추가(하위 호환): `process.layout: "comparison"` + `sections`(3.11 (c)) — 사용자 승인(14장 AS-IS → TO-BE 프로세스 재설계).
+> v1.17 추가(하위 호환): `comparison.layout: "roadmap"`(3.13) — 사용자 승인(14장 3단계 로드맵 + 실행 체계 비교).
 > v1.16 추가(하위 호환): `contrast` 각 쪽 `image`에 최대 2개 배열·`fit` 허용(3.24) — 사용자 승인(3장 로고 2개).
 > v1.15 추가(하위 호환): `contrast` 각 쪽에 선택 필드 `image`(3.24) — 사용자 승인(3장 사진 2장).
 > v1.14 추가(하위 호환): 새 타입 `contrast`(3.24) — 사용자 승인(3장 레퍼런스 references/3pg_slide_concept.png).
@@ -219,6 +222,19 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 ```
 선택(v1.6): `caption`(60자, 단계 아래 한 줄 `.slide__caption`). 필수: `title`, `steps`(3~5개) / 각 단계 `label` 필수, `text` 선택, `gate` 선택(string — 이 단계 **다음**으로 넘어가기 전 관문 조건. 단계 사이에 마름모로 표시. 마지막 단계에는 쓰지 않는다)
 
+#### 3.11 (c) `process.layout: "comparison"` — AS-IS → TO-BE 프로세스 재설계 (v1.18)
+`steps` 대신 `sections`(정확히 2개: [AS-IS, TO-BE])를 쓴다. `layout: "comparison"`일 때 `steps`는 필수가 아니다.
+```json
+{ "id": "process-redesign", "type": "process", "layout": "comparison", "title": "감에서 신호로: …",
+  "sections": [
+    { "label": "AS-IS", "title": "감에 의존하는 기존 방식", "steps": ["감으로 판단", "제품 선정", "해외 진출", "종료"], "caption": "…" },
+    { "label": "TO-BE", "title": "AI 기반 데이터 순환 방식",
+      "steps": [ { "label": "1. 신호 수집", "ai": "…", "human": "…" }, … ], "caption": "…" } ] }
+```
+- `sections[0]`(AS-IS): `label`(8자), `title`(24자), `steps` 3~5개 **문자열**(각 12자), `caption` 선택(40자). 얇은 회색 띠 안에 가로 흐름(→)으로 표시.
+- 두 섹션 사이에 구분선.
+- `sections[1]`(TO-BE): `label`, `title`, `steps` 3~5개 **객체** `{ label(12자), ai(28자), human(24자) }` — 가로 카드. 카드 안에서 AI 역할과 사람 역할을 태그(`AI` / `사람`)로 구분. 마지막 단계 → 첫 단계로 돌아가는 **순환 화살표**를 카드 행 아래에 표시. `caption`(40자)은 슬라이드 최하단 **핵심 변화 메시지**로 강조.
+- `source`는 공통 규칙(80자).
 ### 3.12 `chart` — 막대/선 그래프
 라이브러리 없이 developer가 인라인 SVG로 렌더링한다. 값은 숫자(number)로 쓴다.
 ```json
@@ -247,6 +263,13 @@ description: data/slides.json 작성 규격 표준. 슬라이드 데이터를 �
 ```
 필수: `title`, `columns`(2~5개), `rows`(2~6개, 각 `label` + `values` 배열 길이 = columns 수) / 선택: `highlight`(강조할 열 인덱스, 0부터), `highlightRow`(강조할 행 인덱스, 0부터), `rows[].marks`(values와 같은 길이 배열, 각 값 `null` | `"good"` | `"bad"` | `"warn"` — 셀 단위 색 표시)
 - 평점 기호(◎ ○ △ ×)는 일반 텍스트로 쓴다.
+
+#### `comparison.layout: "roadmap"` (v1.17) — 단계 로드맵 + 카드형 매트릭스
+선택 필드. 열을 **시간 순서 단계**로 쓰는 비교표(예: 시범 → 유료화 → 확장). 마크업은 일반 comparison과 동일한 `table`이며, 슬라이드에 `data-layout="roadmap"`을 부여한다.
+- 상단: `thead`의 열 머리글(`.table__colhead`)이 가로로 놓인 **단계 카드** 3~4개로 보이고, 카드 사이에 진행 방향 화살표(→)를 둔다(CSS 의사요소). 순서상 단계 번호는 `th`에 `data-index="0|1|2…"`로 부여.
+- 중앙: 각 행(`.table__rowhead` 라벨 + `.table__cell`)이 단계 카드 아래로 정렬된 **카드형 셀** 매트릭스. 셀은 표 선 대신 개별 카드(배경·라운드)로 표현.
+- 분량: 열 3~4개, 행 2~5개. 셀은 열 3개면 **40자**, 4개면 26자까지.
+- (v1.19) 열 제목은 `"이름 (기간)"` 형식을 권장한다. developer는 roadmap일 때 끝의 괄호를 분리해 머리글 안을 `div.colhead__card` > `span.colhead__step`("STEP n") + `span.colhead__name`(이름) + `span.colhead__period`(괄호 안 기간, 괄호 제외; 없으면 생략)로 만든다. 카드 모양(chevron)은 `.colhead__card`에 적용하고, 카드 사이 기호(›)는 `th` 의사요소로 그린다.
 
 ### 3.14 `split` — 좌우 분할 (헤드라인 + 내용/이미지)
 한쪽에 큰 헤드라인과 본문, 다른 쪽에 이미지(또는 본문)를 둔다.
@@ -539,6 +562,9 @@ developer는 아래 구조로 마크업을 생성하고, designer는 이 클래�
 | `.slide__tree`, `.tree__heads`, `.tree__head`(`data-level="0|1|leaf"`), `.tree__question`, `.tree__signal`, `.tree__root`, `.tree__node`(`data-depth="1|2"`), `.tree__node-label`, `.tree__leaf`(`data-tone`), `.tree__lines`(`svg`), `.tree__line` | tree(v1.6). `.tree__heads`는 열 머리글 줄(2·3열 질문+징후, 4열 결과 머리글). 본체는 4열 그리드: `.tree__root` → depth 1 노드 2개 → depth 2 노드 4개 → `.tree__leaf` 4개. 연결선은 `.tree__lines` SVG 안 `path.tree__line`(인라인 색 금지, 노드 위치를 측정해 그림). 각 노드·leaf에 `data-branch="0|1"`, depth 2·leaf에 `data-child="0|1"`. 머리글 1·4열은 `.tree__head[data-level="root"|"leaf"][data-empty]` 빈 칸. 선에 `data-from="0|1|2"`(출발 깊이), 마지막 단계는 `data-kind="arrow"` + `marker.tree__arrow` > `path.tree__arrow-head`. 모든 노드는 `.slide__tree`의 직계 자식(평평한 구조, 행 배치는 CSS가 data 속성으로) |
 | `.slide__chart[data-kind="hbar"]` | 가로 막대 chart(v1.7). 하위 요소 클래스는 bar와 동일. 모든 chart figure에 `data-kind="bar|line|hbar"` 부여. `.slide__equation[data-count]`(항 수), `.pillars__base[data-tone]`도 부여 |
 | `.slide--process[data-layout="stairs"]`, `li.step[data-level]` | 계단형 process(v1.7) |
+| `.slide--process[data-layout="comparison"]`, `.slide__redesign`, `.redesign__section[data-variant="as-is|to-be"]`, `.redesign__head`, `.redesign__label`, `.redesign__title`, `.redesign__steps`(`ol`, `data-count`), `.redesign__step`, `.redesign__step-label`, `.redesign__role[data-role="ai|human"]`, `.redesign__role-tag`, `.redesign__role-text`, `.redesign__flow-arrow`, `.redesign__divider`, `.redesign__loop`(`svg`) > `.redesign__loop-path`, `.redesign__loop-label`, `.redesign__caption`, `.redesign__message` | process comparison(v1.18). 구조: `.slide__body > .slide__redesign` 안에 `section.redesign__section[data-variant="as-is"]`(head → steps(li 사이 `.redesign__flow-arrow`) → `.redesign__caption`) → `hr.redesign__divider` → `section[data-variant="to-be"]`(head → steps(카드: step-label → role ai → role human) → `.redesign__loop`) → `p.redesign__message`(TO-BE caption). 역할 태그 문구는 developer가 "AI"·"사람"으로 넣는다. 순환 화살표는 카드 위치를 측정해 그리는 SVG(인라인 색 금지) |
+| `.slide--comparison[data-layout="roadmap"]`, `.table__colhead[data-index]` | 로드맵형 comparison(v1.17). 단계 카드 + 카드형 셀 매트릭스. 화살표는 CSS 의사요소 |
+| `.colhead__card`, `.colhead__step`, `.colhead__name`, `.colhead__period` | roadmap 열 머리글 내부(v1.19). `th.table__colhead > div.colhead__card > span×3` |
 | `.slide__equation`, `.equation__term`, `.equation__op`, `.equation__equals`, `.equation__result`, `.equation__label`, `.equation__text` | equation(v1.7). 순서: term → op → term (→ op → term) → equals → result. `.equation__result`가 주인공 |
 | `.slide__pillars`, `.pillars__columns`(`data-count`), `.pillar`(`data-tone`), `.pillars__base`, `.pillar__label`, `.pillar__value`, `.pillar__title`, `.pillar__text` | pillars(v1.7). `.pillars__columns` 안에 `.pillar` 2~3개, 그 아래 `.pillars__base`(전체 폭). base 내부도 `.pillar__label/value/title/text` 클래스를 재사용 |
 | `.slide__roc`, `.roc__chart`(`figure`), `svg.roc`, `.roc__area`, `.roc__grid`, `.roc__frame`, `.roc__chance`, `.roc__chance-label`, `.roc__curve[data-style="lead|alt|dim"]`, `.roc__tick`, `.roc__axis`, `.roc__lead`, `.roc__marker[data-style="filled|hollow"]`, `.roc__note-heading`, `.roc__note`, `.roc__note-label`, `.roc__aside`, `.roc__models`(`ul`), `.roc__model[data-style]`, `.roc__swatch`(`svg`) > `.roc__swatch-line`, `.roc__name`, `.roc__desc`, `.roc__auc`, `.roc__ci`, `.roc__takeaways`, `.roc__takeaway` | roc(v1.8). 2열: 왼쪽 `.roc__chart`, 오른쪽 `.roc__aside`(models → takeaways). 인라인 색 금지 |

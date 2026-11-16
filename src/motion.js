@@ -136,7 +136,18 @@ class Build {
     this.frames = new Set();
     this.timers = new Set();
     this.end = 0;
+    this.budget = BUILD_BUDGET; // 타입별로 늘릴 수 있음(경고 기준)
+    this.cleanups = new Set(); // 관찰자 해제 등
     this.start = performance.now();
+  }
+
+  onClear(fn) {
+    this.cleanups.add(fn);
+  }
+
+  runCleanups() {
+    this.cleanups.forEach((fn) => fn());
+    this.cleanups.clear();
   }
 
   setStyle(el, prop, value) {
@@ -194,7 +205,10 @@ class Build {
 
   /** 끝난 뒤 인라인 스타일을 걷어 낸다(화면 변화 없음 — fill-mode backwards). */
   scheduleRelease(extra = 0) {
-    const t = window.setTimeout(() => this.releaseStyles(), Math.max(this.end, extra) + 80);
+    const t = window.setTimeout(() => {
+      this.runCleanups();
+      this.releaseStyles();
+    }, Math.max(this.end, extra) + 80);
     this.timers.add(t);
   }
 
@@ -210,6 +224,7 @@ class Build {
 
   /** 즉시 최종 상태로: 애니메이션 · 프레임 · 타이머 취소, 문자열 복원. */
   clear() {
+    this.runCleanups();
     this.frames.forEach((id) => cancelAnimationFrame(id));
     this.frames.clear();
     this.timers.forEach((t) => window.clearTimeout(t));
@@ -385,26 +400,15 @@ const builders = {
     footer(b, s, 1000);
   },
 
-  /* process (6) — 단계 왼쪽 → 오른쪽 / stairs (14) — 계단이 아래에서 차례로, 관문은 그 사이 */
+  /* process (6) — 단계 왼쪽 → 오른쪽 (stairs 레이아웃도 같은 순서로 처리) */
   process(b, s) {
+    if (s.dataset.layout === 'comparison') {
+      redesignBuild(b, s);
+      return;
+    }
     const start = header(b, s);
     const list = $(s, '.slide__process');
     if (!list) return;
-    if (s.dataset.layout === 'stairs') {
-      let t = start;
-      [...list.children].forEach((li) => {
-        if (li.matches('.step__gate')) {
-          b.play(li, 'm-wipe-x', { delay: t, dur: 320 });
-          t += 120;
-        } else {
-          b.play(li, 'm-wipe-up', { delay: t, dur: 500 });
-          b.play($(li, '.step__index'), 'm-fade', { delay: t + 180, dur: 320 });
-          t += 250;
-        }
-      });
-      footer(b, s, 1000);
-      return;
-    }
     stagger(b, [...list.children], { start: start + 20, step: 110, dur: 450 });
     footer(b, s);
   },
@@ -576,6 +580,10 @@ const builders = {
     const start = header(b, s);
     const table = $(s, '.slide__table');
     if (!table) return;
+    if (s.dataset.layout === 'roadmap') {
+      roadmapBuild(b, s, table, start);
+      return;
+    }
     b.play($(table, 'thead'), 'm-fade', { delay: start, dur: 350 });
     const rows = $$(table, 'tbody > tr');
     const normal = rows.filter((r) => !r.classList.contains('is-highlight-row'));
@@ -600,6 +608,103 @@ const builders = {
     footer(b, s, 1050);
   },
 };
+
+/* comparison roadmap (14, v1.17) — 단계 카드 왼→오(시범 → 유료화 → 확장),
+   이어서 매트릭스를 열(단계) 단위로, 열 안에서는 위→아래로 드러냄. 행 라벨은 카드와 함께 페이드.
+   열 간격·행 간격은 1.5초 예산 안으로 같은 비율로 축소한다. */
+function roadmapBuild(b, s, table, start) {
+  const heads = $$(table, 'thead .table__colhead');
+  const idx = (th, i) => {
+    const n = Number(th.dataset.index);
+    return Number.isFinite(n) && th.dataset.index !== '' ? n : i;
+  };
+  const order = heads.map((th, i) => [th, idx(th, i)]).sort((a, c) => a[1] - c[1]).map(([th]) => th);
+  const cardDur = 420;
+  const cardStep = 120;
+  order.forEach((th, i) => b.play(th, 'm-rise', { delay: start + i * cardStep, dur: cardDur }));
+
+  const rows = $$(table, 'tbody > tr');
+  b.playAll(rows.map((r) => $(r, '.table__rowhead')).filter(Boolean), 'm-fade', { delay: start + 120, dur: 380 });
+
+  const grid = rows.map((r) => $$(r, '.table__cell'));
+  const cols = Math.max(0, ...grid.map((cells) => cells.length));
+  const cellDur = 360;
+  const cellStart = start + Math.max(0, order.length - 1) * cardStep + 120;
+  let colStep = 200;
+  let rowStep = 60;
+  const span = (cols - 1) * colStep + (rows.length - 1) * rowStep;
+  const room = Math.max(0, BUILD_BUDGET - cellDur - cellStart);
+  if (span > room && span > 0) {
+    const k = room / span;
+    colStep *= k;
+    rowStep *= k;
+  }
+  for (let c = 0; c < cols; c += 1) {
+    grid.forEach((cells, r) => {
+      b.play(cells[c], 'm-rise-sm', { delay: cellStart + c * colStep + r * rowStep, dur: cellDur });
+    });
+  }
+  footer(b, s, 1000);
+}
+
+/* process comparison (14, v1.18) — AS-IS 띠 한 덩어리(약하게) → 구분선 → TO-BE 머리
+   → 카드 1→4(사이 화살표, 카드 안 AI → 사람) → 순환 화살표 그리기 + 화살촉 → 핵심 메시지.
+   .redesign__step / .redesign__section에는 끝난 뒤 남는 transform이 없다(fill backwards). */
+function redesignBuild(b, s) {
+  b.budget = 2200;
+  const start = header(b, s);
+  const asIs = $(s, '.redesign__section[data-variant="as-is"]');
+  const toBe = $(s, '.redesign__section[data-variant="to-be"]');
+  b.play(asIs, 'm-fade', { delay: start - 40, dur: 300 });
+  b.play($(s, '.redesign__divider'), 'm-grow-x', { delay: start + 160, dur: 380 });
+  if (toBe) {
+    b.play($(toBe, ':scope > .redesign__head'), 'm-rise', { delay: start + 300, dur: 420 });
+    const list = $(toBe, ':scope > .redesign__steps');
+    const cardStep = 120;
+    let t = start + 400;
+    let lastCard = t;
+    [...(list?.children ?? [])].forEach((li) => {
+      if (li.matches('.redesign__flow-arrow')) {
+        b.play(li, 'm-fade', { delay: t - cardStep / 2, dur: 260 });
+        return;
+      }
+      b.play(li, 'm-rise', { delay: t, dur: 420 });
+      b.play($(li, '.redesign__role[data-role="ai"]'), 'm-rise-sm', { delay: t + 90, dur: 340 });
+      b.play($(li, '.redesign__role[data-role="human"]'), 'm-rise-sm', { delay: t + 160, dur: 340 });
+      lastCard = t;
+      t += cardStep;
+    });
+    drawLoop(b, toBe, Math.max(lastCard + 300, start + 900), 560);
+  }
+  b.play($(s, '.redesign__message'), 'm-emphasis', { delay: 1760, dur: 420 });
+  footer(b, s, 1000);
+}
+
+/* 순환 화살표: 재생 시점에 길이를 잰다. app.js가 폰트 로드 · 리사이즈 뒤 d를 다시 쓰면
+   --m-len만 갱신한다(빌드 정리 시 관찰 해제, 인라인 animation은 releaseStyles로 제거 →
+   최종 상태에 dasharray가 남지 않음). 화살촉(marker)은 선이 끝날 때 페이드. */
+function drawLoop(b, section, delay, dur) {
+  const svg = $(section, '.redesign__loop');
+  const path = svg && $(svg, '.redesign__loop-path');
+  if (!path) return;
+  const lenVar = () => {
+    const len = pathLength(path);
+    return len > 0 ? `${(len + 8).toFixed(1)}px` : null; // +8: 둥근 끝(cap)이 미리 보이지 않게
+  };
+  const len = lenVar();
+  if (!len) {
+    b.play(svg, 'm-fade', { delay, dur }); // 아직 경로가 없으면 페이드
+    return;
+  }
+  b.play(path, 'm-draw', { delay, dur, ease: 'cubic-bezier(0.45, 0.05, 0.35, 1)', vars: { '--m-len': len } });
+  b.playAll($$(svg, 'marker path, marker polygon, marker polyline'), 'm-fade', { delay: delay + dur - 60, dur: 200 });
+  const observer = new MutationObserver(() => {
+    const next = lenVar();
+    if (next) path.style.setProperty('--m-len', next);
+  });
+  observer.observe(path, { attributes: true, attributeFilter: ['d'] });
+  b.onClear(() => observer.disconnect());
+}
 
 /* 정의되지 않은 타입: 머리글 + 본문 블록 순차 (절제) */
 function genericBuild(b, s) {
@@ -682,7 +787,7 @@ function enter(slide, index, dir) {
     state.build = null;
     return;
   }
-  if (b.end > BUILD_BUDGET + 60) console.warn(`[motion] 슬라이드 ${index + 1} 빌드 ${Math.round(b.end)}ms — 예산 ${BUILD_BUDGET}ms 초과`);
+  if (b.end > b.budget + 60) console.warn(`[motion] 슬라이드 ${index + 1} 빌드 ${Math.round(b.end)}ms — 예산 ${b.budget}ms 초과`);
   b.scheduleRelease(6000 + 80); // 켄번스(6s)가 있으면 그 뒤에 정리
 }
 

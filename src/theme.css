@@ -10450,3 +10450,961 @@ svg.iceberg__art {
     background: var(--contrast-fill);
   }
 }
+
+/* --------------------------------------------------------------------------
+   12-35. comparison roadmap — chevron 단계 머리 + 카드형 셀 매트릭스 (v1.19, 스키마 3.13 · 15장 #three-stages)
+   마크업: th.table__colhead > div.colhead__card > span.colhead__step("STEP n") + .colhead__name + .colhead__period
+   12-7 헤어라인 · data-rows/cols 글자 단계 · [data-step] 하한은 모두 이 절에서 덮어쓴다(특이도 0,4,0 이상).
+   v1.19: 계단(border-top 오프셋) · ↗ 화살표 · CSS counter STEP 제거 → chevron 카드 + 카드 사이 '›'
+   motion.js가 th.table__colhead에 transform 빌드를 걸므로 th에는 transform을 쓰지 않는다.
+
+   열 폭 (표 = 1760 + 간격 16 * 2, 바깥 간격은 음수 여백으로 상쇄 → 보이는 격자 x80 ~ x1840)
+     행 라벨 = 1760 * 11% ≈ 194 · 열 내용 합 = 1792 - 16 * 5 = 1712
+     3열: (1712 - 194) / 3 = 506 → 글자 칸 506 - 40 * 2 = 426px
+          최장 셀 "신호가 좋으면 해외 유통사 정보 제공, 아니면 진출 지원만 유지"(한글 25 + 공백 9)
+          28px(한글 ≈ 27~28px · 공백 ≈ 7px): 1줄 "신호가 … 정보" ≈ 392 · 2줄 "제공, … 유지" ≈ 372 → 2줄 OK
+          "데이터 사업 … 정보 / 방화벽·Data 거버넌스 담당 지정" ≈ 333 / 388 → 2줄 OK → 28px 채택
+     4열: (1712 - 16 - 194) / 4 ≈ 375 → 글자 칸 375 - 28 * 2 = 319 · 26px
+   높이 (본문 = 제목 1줄 · source 없음 ≈ 755)
+     머리 150 (= 1080 * 14%) · 안: STEP 22*1.2 + 4 + 이름 44*1.2 + 4 + 기간 28*1.2 = 120.8
+     행 고정 = 28 * 1.4 * 2 + 32 * 2 = 142.4
+     3행: 150 + 142.4 * 3 + 16 * 3 = 625.2 → 남는 ≈ 130을 위아래 1:1(≈ 65씩)
+     4행: 150 + (28*1.4*2 + 24*2 = 126.4) * 4 + 64 = 719.6
+     5행: 128 + (26*1.35*2 + 16*2 = 102.2) * 5 + 80 = 719
+     6행: 128 + (24*1.3*2 + 12*2 = 86.4) * 6 + 96 = 742.4
+   좁은 본문(< 740): 머리 120 · 24px/1.3 · py 12 → 5행 120 + 432 + 80 = 632 (최악 본문 ≈ 675)
+   단계 색: 1단계 중립(paper-200) → 2단계 옅은 초록 → 3단계 주인공(짙은 초록 · 흰 글자), 셀도 같은 순서로 진해짐
+   -------------------------------------------------------------------------- */
+.slide.slide--comparison[data-layout="roadmap"] {
+  --rm-gap-x: 16px;
+  --rm-gap-y: 16px;
+  --rm-radius: 14px;
+  --rm-label-w: 194px;
+  --rm-head-h: 150px;
+  --rm-point: 32px;
+  --rm-head-px: 20px;
+  --rm-head-fs: 44px;
+  --rm-step-fs: 22px;
+  --rm-period-fs: 28px;
+  --rm-head-gap: 4px;
+  --rm-sep-fs: 36px;
+  --rm-cell-fs: 28px;
+  --rm-cell-lh: 1.4;
+  --rm-cell-py: 32px;
+  --rm-cell-px: 40px;
+  --rm-label-fs: 30px;
+  /* 단계별 면 (테마 토큰 재사용) */
+  --rm-stage-0-bg: var(--stair-bg-1);
+  --rm-stage-0-fg: var(--color-text);
+  --rm-stage-0-label: var(--color-muted);
+  --rm-stage-1-bg: var(--table-highlight-row);
+  --rm-stage-1-fg: var(--color-primary);
+  --rm-stage-1-label: var(--color-primary);
+  --rm-stage-2-bg: var(--hero-bg);
+  --rm-stage-2-fg: var(--hero-fg);
+  --rm-stage-2-label: var(--hero-accent);
+  --rm-cell-0-bg: var(--color-surface);
+  --rm-cell-1-bg: var(--table-highlight);
+  --rm-cell-2-bg: var(--table-highlight-row);
+}
+
+/* 행 수별 단계 (계산은 절 머리 주석) */
+.slide.slide--comparison[data-layout="roadmap"][data-rows="4"] {
+  --rm-cell-py: 24px;
+}
+
+.slide.slide--comparison[data-layout="roadmap"][data-rows="5"] {
+  --rm-head-h: 128px;
+  --rm-head-fs: 38px;
+  --rm-step-fs: 20px;
+  --rm-period-fs: 24px;
+  --rm-head-gap: 2px;
+  --rm-cell-fs: 26px;
+  --rm-cell-lh: 1.35;
+  --rm-cell-py: 16px;
+  --rm-label-fs: 28px;
+}
+
+.slide.slide--comparison[data-layout="roadmap"][data-rows="6"] {
+  --rm-head-h: 128px;
+  --rm-head-fs: 38px;
+  --rm-step-fs: 20px;
+  --rm-period-fs: 24px;
+  --rm-head-gap: 2px;
+  --rm-cell-fs: 24px;
+  --rm-cell-lh: 1.3;
+  --rm-cell-py: 12px;
+  --rm-label-fs: 26px;
+}
+
+/* 4열: 열 폭 ≈ 375 → 단계명 40 · 셀 26px · 좌우 28 (행 수 규칙보다 뒤에 두어 우선) */
+.slide.slide--comparison[data-layout="roadmap"][data-cols="4"] {
+  --rm-point: 28px;
+  --rm-head-fs: 40px;
+  --rm-cell-fs: 26px;
+  --rm-cell-px: 28px;
+}
+
+.slide.slide--comparison[data-layout="roadmap"][data-cols="4"]:is([data-rows="5"], [data-rows="6"]) {
+  --rm-head-fs: 34px;
+  --rm-cell-fs: 24px;
+  --rm-cell-lh: 1.3;
+}
+
+/* 4열: 3·4단계 모두 주인공 쪽으로 */
+.slide.slide--comparison[data-layout="roadmap"][data-cols="4"] {
+  --rm-stage-3-bg: var(--hero-bg);
+  --rm-stage-3-fg: var(--hero-fg);
+  --rm-stage-3-label: var(--hero-accent);
+  --rm-cell-3-bg: var(--table-highlight-row);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .slide__table {
+  width: calc(100% + var(--rm-gap-x) * 2);
+  margin: calc(var(--rm-gap-y) * -1) calc(var(--rm-gap-x) * -1);
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: var(--rm-gap-x) var(--rm-gap-y);
+}
+
+/* 행 높이 고정 = 2줄 + 위아래 여백 (세 행 모두 같음 · 12-7 공통의 본문 나눔 규칙 해제).
+   더 긴 문구가 들어와 3줄이 되면 표 셀 특성상 그 행만 늘어난다(넘침 아님). */
+.slide.slide--comparison[data-layout="roadmap"] .slide__table thead tr {
+  height: var(--rm-head-h);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .slide__table tbody tr {
+  height: calc(var(--rm-cell-fs) * var(--rm-cell-lh) * 2 + var(--rm-cell-py) * 2);
+}
+
+/* 블록 세로 배치: 남는 높이(3행 ≈ 130)를 위아래 스페이서 1:1로 나눠 가운데 */
+.slide.slide--comparison[data-layout="roadmap"] .slide__body::before,
+.slide.slide--comparison[data-layout="roadmap"] .slide__body::after {
+  flex: 1 1 0;
+}
+
+/* ---- 공통 초기화: 헤어라인 · 강조 막대 제거 ---- */
+.slide.slide--comparison[data-layout="roadmap"]
+  :where(.table__corner, .table__colhead, .table__rowhead, .table__cell) {
+  border: 0;
+  box-shadow: none;
+  text-align: left;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+/* ---- 모서리: 비움 · 행 라벨 칸 폭 ---- */
+.slide.slide--comparison[data-layout="roadmap"] .table__corner {
+  width: var(--rm-label-w);
+  padding: 0;
+  background: none;
+}
+
+/* ---- 상단: chevron 단계 카드 + 카드 사이 '›' ---- */
+/* th는 틀만(투명 · 여백 0). 면 · 모양은 안쪽 .colhead__card에 — clip-path가 th 의사요소('›')를 자르지 않게 */
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead {
+  --stage-bg: var(--rm-stage-0-bg);
+  --stage-fg: var(--rm-stage-0-fg);
+  --stage-label: var(--rm-stage-0-label);
+  position: relative;
+  height: var(--rm-head-h);
+  padding: 0;
+  background: none;
+  color: var(--stage-fg);
+  font-size: var(--rm-head-fs);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .colhead__card {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rm-head-gap);
+  width: 100%;
+  height: var(--rm-head-h);
+  /* 글자 묶음은 뾰족한 끝을 뺀 몸통 가운데보다 끝 쪽으로 반만 — 시각 중심 */
+  padding: 0 calc(var(--rm-head-px) + var(--rm-point) / 2) 0 var(--rm-head-px);
+  border-radius: var(--rm-radius) 0 0 var(--rm-radius); /* 왼쪽 모서리만 둥글게(오른쪽은 clip-path 끝) */
+  background: var(--stage-bg);
+  color: var(--stage-fg);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--rm-point)) 0,
+    100% 50%,
+    calc(100% - var(--rm-point)) 100%,
+    0 100%
+  );
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .colhead__step {
+  display: block;
+  font-size: var(--rm-step-fs);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.1em;
+  color: var(--stage-label);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .colhead__name {
+  display: block;
+  font-size: var(--rm-head-fs);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: var(--stage-fg);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .colhead__period {
+  display: block;
+  font-size: var(--rm-period-fs);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0;
+  color: var(--stage-fg);
+}
+
+/* 안쪽 카드가 없는 옛 마크업(텍스트만) 대비: th 자체에 면만 깔아 둔다 */
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead:not(:has(.colhead__card)) {
+  padding: 0 var(--rm-head-px);
+  border-radius: var(--rm-radius);
+  background: var(--stage-bg);
+}
+
+.slide.slide--comparison[data-layout="roadmap"]
+  .table__colhead:is([data-index="1"], :nth-child(3)) {
+  --stage-bg: var(--rm-stage-1-bg);
+  --stage-fg: var(--rm-stage-1-fg);
+  --stage-label: var(--rm-stage-1-label);
+}
+
+.slide.slide--comparison[data-layout="roadmap"]
+  .table__colhead:is([data-index="2"], :nth-child(4)) {
+  --stage-bg: var(--rm-stage-2-bg);
+  --stage-fg: var(--rm-stage-2-fg);
+  --stage-label: var(--rm-stage-2-label);
+}
+
+.slide.slide--comparison[data-layout="roadmap"]
+  .table__colhead:is([data-index="3"], :nth-child(5)) {
+  --stage-bg: var(--rm-stage-3-bg);
+  --stage-fg: var(--rm-stage-3-fg);
+  --stage-label: var(--rm-stage-3-label);
+}
+
+/* v1.19: STEP은 실제 텍스트(.colhead__step) — 옛 counter · 12-7 강조 막대 의사요소 제거 */
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead::before {
+  content: none;
+}
+
+/* 카드 사이 '›': 간격(16px) 한가운데 · 세로 가운데 (th 기준 · transform 없음) */
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead::after {
+  content: none;
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead:not(:last-child)::after {
+  content: "\203A";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--rm-gap-x);
+  margin: 0;
+  padding: 0 0 0.12em;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font-size: var(--rm-sep-fs);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  pointer-events: none;
+}
+
+/* is-highlight 열이 있어도 카드 위계 유지(막대 대신 안쪽 링 — clip-path 탓에 뾰족한 끝 사선에는 안 보임) */
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead.is-highlight {
+  box-shadow: none;
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .table__colhead.is-highlight > .colhead__card {
+  box-shadow: inset 0 0 0 3px var(--color-primary);
+}
+
+/* ---- 행 라벨: 테두리 칩 (11% 열을 가득 · 세로 가운데) ---- */
+.slide.slide--comparison[data-layout="roadmap"] .table__rowhead {
+  box-sizing: border-box;
+  width: var(--rm-label-w);
+  padding: 12px 8px;
+  border: 2px solid var(--color-text);
+  border-radius: var(--rm-radius);
+  background: none;
+  color: var(--color-text);
+  font-size: var(--rm-label-fs);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-align: center;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* ---- 셀: 개별 카드, 단계 순서대로 진해지는 면 ---- */
+.slide.slide--comparison[data-layout="roadmap"] .table__cell {
+  padding: var(--rm-cell-py) var(--rm-cell-px);
+  border-radius: var(--rm-radius);
+  background: var(--rm-cell-0-bg);
+  color: var(--color-text);
+  font-size: var(--rm-cell-fs);
+  font-weight: 500;
+  line-height: var(--rm-cell-lh);
+  letter-spacing: -0.01em;
+  text-align: left;
+  vertical-align: middle;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .table__cell:nth-child(3) {
+  background: var(--rm-cell-1-bg);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .table__cell:nth-child(4) {
+  background: var(--rm-cell-2-bg);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] .table__cell:nth-child(5) {
+  background: var(--rm-cell-3-bg);
+}
+
+/* 행 강조(선택): 라벨 칩 채움 + 셀 굵게 */
+.slide.slide--comparison[data-layout="roadmap"] tr.is-highlight-row > .table__rowhead {
+  padding-left: 8px;
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+.slide.slide--comparison[data-layout="roadmap"] tr.is-highlight-row > .table__cell {
+  font-weight: 700;
+}
+
+/* 셀 표시(data-mark)는 글자색만 (면은 단계 색 유지) */
+.slide.slide--comparison[data-layout="roadmap"] .table__cell[data-mark] {
+  color: var(--mark-color);
+  font-weight: 700;
+}
+
+/* ---- 좁은 본문(제목 2줄 또는 source 있음) 대비 한 단계 축소 ---- */
+@container body (max-height: 739.98px) {
+  /* 컨테이너(.slide__body) 안쪽 요소에만 적용되므로 표에 변수를 다시 건다 */
+  .slide.slide--comparison[data-layout="roadmap"] .slide__table {
+    --rm-head-h: 120px;
+    --rm-head-fs: 36px;
+    --rm-step-fs: 20px;
+    --rm-period-fs: 24px;
+    --rm-head-gap: 2px;
+    --rm-cell-fs: 24px;
+    --rm-cell-lh: 1.3;
+    --rm-cell-py: 12px;
+    --rm-label-fs: 26px;
+  }
+}
+
+@media print {
+  .slide.slide--comparison[data-layout="roadmap"]
+    :is(.table__colhead, .colhead__card, .table__rowhead, .table__cell),
+  .slide.slide--comparison[data-layout="roadmap"] .table__colhead::after {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+/* ==========================================================================
+   v1.18 process.layout "comparison" — AS-IS → TO-BE 프로세스 재설계 (14장 process-redesign)
+   구조: .slide__body > .slide__redesign
+           section[as-is](head → steps(→) → caption) → hr.divider
+           → section[to-be](head → 카드 steps(→) → svg.redesign__loop) → p.redesign__message
+   위계: AS-IS = 얇은 회색 띠(작은 글자 · muted) / TO-BE = 흰 카드 + 초록 상단선 / 메시지 = 초록 굵게
+   motion.js가 .redesign__step · .redesign__section을 움직일 수 있으므로 이 둘에는 transform을 쓰지 않는다.
+
+   높이 (본문 가용: 제목 1줄 + source 1줄 = 920 - kicker 48.6 - 제목 116.8 - source 63.8 = 690.8px)
+     AS-IS 머리: 34*1.25 42.5 + 16 (띠 밖, TO-BE 머리와 동일 배치)                          =  58.5
+     AS-IS 띠:  pad 20x2 + 단계 pill (26*1.25 + 9x2 + 2 = 52.5) + 8 + caption 24*1.35 32.4 = 132.9
+     구분선:    최소 18 + 1 + 18 = 37, 남는 높이 흡수 최대 100                              =  37~100
+     TO-BE 머리: 34*1.25 42.5 + 16                                                        =  58.5
+     카드:      선 4+1 + pad 16x2 + 라벨 28*1.25 35 + 12
+                + 역할 칸 고정 200 (AI | 사람 1:1 나란히, 4줄 최악 185.2 + 여유)          = 284
+     순환 예약:  56                                                                       =  56
+     메시지:    (데이터에 caption 없으면 미렌더) mt 8 + pad 12x2 + 30*1.3 39             = (71)
+     합계 626.9px (구분선 최소) → 구분선이 63.9 흡수 → 약 690px (<= 690.8)
+     메시지가 렌더되면(:has) band pad 16 · role-h 186으로 되돌림 → 58.5+124.9+37+58.5+270+56+71 = 675.9
+   카드 폭: (1760 - 화살표 36x3) / 4 = 413 → 안쪽 413 - 2 - 32 = 379
+            → 역할 칸 (379 - 10) / 2 = 184.5 → 글자 칸 184.5 - 2 - 24 = 158.5px (22px 약 7자/줄)
+            최장 "국내 판매·Amazon 순위 자동 수집·정제"(keep-all) 4줄 = 최악 기준
+   좁은 본문(< 680px, 제목 2줄 등)은 아래 축소 단계: 역할 칸 168 등 약 -120px
+   ========================================================================== */
+.slide--process[data-layout="comparison"] {
+  --redesign-card: var(--white);
+  --redesign-tint: rgba(11, 107, 67, 0.07);
+  --redesign-band: var(--paper-100);
+  --redesign-arrow: var(--stone-500);
+}
+
+.slide--process[data-layout="comparison"][data-theme="dark"] {
+  --redesign-card: rgba(255, 255, 255, 0.04);
+  --redesign-tint: rgba(134, 214, 166, 0.1);
+  --redesign-band: var(--night-800);
+  --redesign-arrow: rgba(238, 240, 234, 0.45);
+}
+
+.slide--process[data-layout="comparison"][data-theme="accent"] {
+  --redesign-card: rgba(255, 255, 255, 0.07);
+  --redesign-tint: rgba(221, 243, 181, 0.12);
+  --redesign-band: rgba(0, 0, 0, 0.14);
+  --redesign-arrow: rgba(255, 255, 255, 0.55);
+}
+
+.slide--process[data-layout="comparison"] .slide__redesign {
+  --rd-band-py: 20px;
+  --rd-pill-fs: 26px;
+  --rd-pill-py: 9px;
+  --rd-asis-caption-fs: 24px;
+  --rd-divider-my: 18px;
+  --rd-head-fs: 34px;
+  --rd-head-mb: 16px;
+  --rd-card-p: 16px;
+  --rd-card-label-fs: 28px;
+  --rd-card-gap: 12px;
+  --rd-role-fs: 22px;
+  --rd-role-lh: 1.4;
+  --rd-role-h: 200px;
+  --rd-role-col-gap: 10px;
+  --rd-role-gap: 8px;
+  --rd-role-px: 12px;
+  --rd-tag-fs: 18px;
+  --rd-tag-h: 28px;
+  --rd-ai-pad: 12px;
+  --rd-loop-space: 56px;
+  --rd-message-fs: 30px;
+  --rd-message-py: 12px;
+  --rd-message-mt: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.slide--process[data-layout="comparison"] .slide__redesign:has(> .redesign__message) {
+  --rd-band-py: 16px;
+  --rd-role-h: 186px;
+}
+
+/* 본문 위아래 스페이서를 끄고 블록이 제목 바로 아래(제목 margin 40)에서 시작해 본문 높이를 채운다.
+   남는 높이는 .redesign__divider가 흡수(AS-IS ↔ TO-BE 사이 여백) → 큰 빈 띠 없음 */
+.slide--process[data-layout="comparison"] .slide__body::before,
+.slide--process[data-layout="comparison"] .slide__body::after {
+  flex-grow: 0;
+}
+
+.slide--process[data-layout="comparison"] .slide__body > .slide__redesign {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* ---- 섹션 공통 ---- */
+.slide--process[data-layout="comparison"] .redesign__section {
+  position: relative;
+  min-width: 0;
+  margin: 0;
+}
+
+.slide--process[data-layout="comparison"] .redesign__head {
+  min-width: 0;
+}
+
+.slide--process[data-layout="comparison"] .redesign__label {
+  display: inline-flex;
+  align-items: center;
+  height: var(--rd-tag-h);
+  padding: 0 12px;
+  font-size: var(--rd-tag-fs);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+}
+
+.slide--process[data-layout="comparison"] .redesign__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.slide--process[data-layout="comparison"] .redesign__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  min-width: 0;
+}
+
+/* 단계 사이 화살표: 글자(→ 등)는 숨기고 선 + 꺾쇠로 그린다 */
+.slide--process[data-layout="comparison"] .redesign__flow-arrow {
+  position: relative;
+  flex: none;
+  align-self: center;
+  width: var(--rd-arrow-w, 44px);
+  height: 20px;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
+}
+
+.slide--process[data-layout="comparison"] .redesign__flow-arrow > * {
+  display: none;
+}
+
+.slide--process[data-layout="comparison"] .redesign__flow-arrow::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 11px;
+  top: 50%;
+  height: var(--rd-arrow-stroke, 2px);
+  margin-top: calc(var(--rd-arrow-stroke, 2px) / -2);
+  background: var(--rd-arrow-color, var(--color-text));
+}
+
+.slide--process[data-layout="comparison"] .redesign__flow-arrow::after {
+  content: "";
+  position: absolute;
+  right: 11px;
+  top: 50%;
+  width: 11px;
+  height: 11px;
+  margin-top: -5.5px;
+  border-top: var(--rd-arrow-stroke, 2px) solid
+    var(--rd-arrow-color, var(--color-text));
+  border-right: var(--rd-arrow-stroke, 2px) solid
+    var(--rd-arrow-color, var(--color-text));
+  transform: rotate(45deg);
+}
+
+/* ---- AS-IS: 머리(띠 밖, TO-BE 머리와 같은 한 줄 배치) → 회색 띠(단계 흐름 / caption) ----
+   섹션 자체는 투명. 띠는 ::before 격자 항목으로 2행~끝행(steps + caption)에만 깐다.
+   열: 띠 좌우 안쪽 32 | 내용 | 32   행: 머리 | 띠 위 pad | steps | caption | 띠 아래 pad */
+.slide--process[data-layout="comparison"] .redesign__section[data-variant="as-is"] {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 32px;
+  grid-template-rows: auto var(--rd-band-py) auto auto var(--rd-band-py);
+  row-gap: 0;
+  column-gap: 0;
+  align-items: center;
+  padding: 0;
+  background: transparent;
+  color: var(--color-muted);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]::before {
+  content: "";
+  grid-column: 1 / -1;
+  grid-row: 2 / -1;
+  align-self: stretch;
+  background: var(--redesign-band);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  > .redesign__head {
+  grid-column: 1 / -1;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: var(--rd-head-mb);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  .redesign__label {
+  flex: none;
+  border: 1.5px solid var(--color-muted);
+  color: var(--color-muted);
+  background: transparent;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  .redesign__title {
+  min-width: 0;
+  font-size: var(--rd-head-fs);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  > .redesign__steps {
+  grid-column: 2;
+  grid-row: 3;
+  --rd-arrow-w: 44px;
+  --rd-arrow-stroke: 1.5px;
+  --rd-arrow-color: var(--redesign-arrow);
+  align-items: stretch;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  .redesign__step {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--rd-pill-py) 16px;
+  border: 1px solid var(--color-hairline);
+  background: var(--color-bg);
+  font-size: var(--rd-pill-fs);
+  font-weight: 500;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+/* 마지막 단계(예: "종료")는 점선 = 흐름이 끊기는 막다른 끝 */
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  .redesign__step:last-child {
+  border-style: dashed;
+  border-color: var(--color-muted);
+  background: transparent;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  .redesign__step-label {
+  font: inherit;
+  color: inherit;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  > .redesign__caption {
+  grid-column: 2;
+  grid-row: 4;
+  margin: 8px 0 0;
+  font-size: var(--rd-asis-caption-fs);
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--color-muted);
+}
+
+/* ---- 구분선: 남는 세로 공간을 흡수하는 유일한 칸 (선은 가운데 1px, 최소 my*2+1 / 최대 100px) ---- */
+.slide--process[data-layout="comparison"] .redesign__divider {
+  flex: 1 0 auto;
+  width: 100%;
+  height: calc(var(--rd-divider-my) * 2 + 1px);
+  max-height: 100px;
+  margin: 0;
+  border: 0;
+  background: linear-gradient(var(--color-hairline), var(--color-hairline))
+    center / 100% 1px no-repeat;
+}
+
+/* ---- TO-BE: 머리(태그 + 제목 한 줄) → 카드 행 → 순환 화살표 예약 ---- */
+.slide--process[data-layout="comparison"] .redesign__section[data-variant="to-be"] {
+  position: relative;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  > .redesign__head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: var(--rd-head-mb);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  .redesign__label {
+  flex: none;
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  .redesign__title {
+  min-width: 0;
+  font-size: var(--rd-head-fs);
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  > .redesign__steps {
+  --rd-arrow-w: 36px;
+  --rd-arrow-stroke: 2px;
+  --rd-arrow-color: var(--color-text);
+  position: relative;
+  z-index: 1;
+  align-items: stretch;
+}
+
+/* 카드: 라벨(전체 폭) / AI | 사람 (1:1, 고정 높이) — 4장 모두 같은 크기 */
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  .redesign__step {
+  flex: 1 1 0;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto var(--rd-role-h);
+  align-content: start;
+  column-gap: var(--rd-role-col-gap);
+  row-gap: var(--rd-card-gap);
+  padding: var(--rd-card-p);
+  border: 1px solid var(--color-hairline);
+  border-top: 4px solid var(--color-primary);
+  background: var(--redesign-card);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  .redesign__step
+  > .redesign__step-label {
+  grid-column: 1 / -1;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slide--process[data-layout="comparison"] .redesign__step-label {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: var(--rd-card-label-fs);
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+}
+
+/* 역할 블록: AI = 초록 옅은 면 + 채운 태그 / 사람 = 테두리 면 + 테두리 태그
+   두 블록 모두 고정 높이(--rd-role-h) · 같은 테두리 두께 → 글 길이와 무관하게 같은 면적, 글은 위 정렬 */
+.slide--process[data-layout="comparison"] .redesign__role {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: var(--rd-role-gap);
+  min-width: 0;
+  height: var(--rd-role-h);
+  padding: var(--rd-ai-pad) var(--rd-role-px);
+  border: 1px solid var(--color-hairline);
+  overflow: hidden;
+}
+
+.slide--process[data-layout="comparison"] .redesign__role[data-role="ai"] {
+  border-color: transparent;
+  background: var(--redesign-tint);
+}
+
+.slide--process[data-layout="comparison"] .redesign__role[data-role="human"] {
+  background: transparent;
+}
+
+.slide--process[data-layout="comparison"] .redesign__role-tag {
+  display: inline-flex;
+  align-items: center;
+  height: var(--rd-tag-h);
+  padding: 0 10px;
+  font-size: var(--rd-tag-fs);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__role[data-role="ai"]
+  .redesign__role-tag {
+  background: var(--color-primary);
+  color: var(--color-bg);
+  border: 1.5px solid var(--color-primary);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__role[data-role="human"]
+  .redesign__role-tag {
+  background: transparent;
+  color: var(--color-text);
+  border: 1.5px solid var(--color-text);
+}
+
+.slide--process[data-layout="comparison"] .redesign__role-text {
+  display: block;
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+  font-size: var(--rd-role-fs);
+  font-weight: 500;
+  line-height: var(--rd-role-lh);
+  color: var(--color-text);
+}
+
+/* 순환 화살표: 카드 행 바로 아래 흐름 안 고정 높이 SVG
+   (developer가 카드 위치를 측정해 svg 자체 박스 안에 path를 그림: 마지막 카드 아래 → 바닥 → 첫 카드 아래) */
+.slide--process[data-layout="comparison"] .redesign__loop {
+  display: block;
+  flex: none;
+  width: 100%;
+  height: var(--rd-loop-space);
+  overflow: visible;
+  pointer-events: none;
+}
+
+.slide.slide--process[data-layout="comparison"] .redesign__loop-path {
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-width: 3px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.slide.slide--process[data-layout="comparison"]
+  .redesign__loop
+  marker
+  :is(path, polygon, polyline) {
+  fill: var(--color-primary);
+  stroke: none;
+}
+
+.slide--process[data-layout="comparison"] .redesign__loop-label {
+  fill: var(--color-primary);
+  color: var(--color-primary);
+  font-family: var(--font-heading);
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* TO-BE caption → 슬라이드 최하단 핵심 변화 메시지 */
+.slide--process[data-layout="comparison"] .redesign__message {
+  flex: none;
+  align-self: stretch;
+  margin: var(--rd-message-mt) 0 0;
+  padding: var(--rd-message-py) 24px;
+  border-left: 6px solid var(--color-primary);
+  background: var(--redesign-tint);
+  font-family: var(--font-heading);
+  font-size: var(--rd-message-fs);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--color-primary);
+}
+
+/* 5단계: 카드 폭 (1760 - 40x4)/5 = 320 → 글자 칸 258px, 글자 한 단계 축소 */
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  > .redesign__steps[data-count="5"] {
+  --rd-arrow-w: 36px;
+  --rd-card-p: 14px;
+  --rd-card-label-fs: 26px;
+  --rd-role-fs: 22px;
+  --rd-role-lh: 1.35;
+  --rd-role-gap: 6px;
+  --rd-ai-pad: 8px;
+  --rd-role-h: 112px;
+}
+
+/* 5단계는 카드가 좁아(글자 칸 ~110px) 1:1 나란히 대신 위아래 고정 높이 2칸으로 전환
+   AI/사람 칸: 테두리 2 + pad 8x2 + 태그 28 + 6 + 22*1.35 2줄 59.4 = 111.4 → 112 */
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="to-be"]
+  > .redesign__steps[data-count="5"]
+  > .redesign__step {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto var(--rd-role-h) var(--rd-role-h);
+}
+
+.slide--process[data-layout="comparison"]
+  .redesign__section[data-variant="as-is"]
+  > .redesign__steps[data-count="5"] {
+  --rd-arrow-w: 36px;
+  --rd-pill-fs: 24px;
+}
+
+/* ---- 좁은 본문(< 680px: 제목 2줄 또는 source 2줄) 축소 단계: 약 -106px ---- */
+@container body (max-height: 679.98px) {
+  .slide--process[data-layout="comparison"] .slide__redesign {
+    --rd-band-py: 12px;
+    --rd-pill-py: 7px;
+    --rd-asis-caption-fs: 22px;
+    --rd-divider-my: 14px;
+    --rd-head-fs: 30px;
+    --rd-head-mb: 12px;
+    --rd-card-p: 14px;
+    --rd-card-label-fs: 26px;
+    --rd-card-gap: 10px;
+    --rd-role-fs: 22px;
+    --rd-role-lh: 1.35;
+    --rd-tag-h: 24px;
+    --rd-tag-fs: 16px;
+    --rd-ai-pad: 8px;
+    --rd-role-gap: 6px;
+    --rd-role-h: 168px;
+    --rd-loop-space: 48px;
+    --rd-message-fs: 26px;
+    --rd-message-py: 10px;
+    --rd-message-mt: 4px;
+  }
+
+  /* 위 :has 규칙(특이도 높음)을 축소 단계 값으로 다시 덮음 */
+  .slide--process[data-layout="comparison"] .slide__redesign:has(> .redesign__message) {
+    --rd-band-py: 12px;
+    --rd-role-h: 168px;
+  }
+}
+
+@media print {
+  .slide--process[data-layout="comparison"]
+    :is(
+      .redesign__section,
+      .redesign__step,
+      .redesign__label,
+      .redesign__role,
+      .redesign__role-tag,
+      .redesign__message,
+      .redesign__divider
+    ) {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

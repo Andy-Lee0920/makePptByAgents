@@ -158,7 +158,16 @@ const ROC_LIMITS = { title: 50, axis: 40, name: 20, desc: 30, line: 20, lines: 2
 const COMMON_LIMIT_OVERRIDES = { roc: { kicker: 60, source: 160 }, 'data-panels': { source: 160 } };
 
 // process 레이아웃 (v1.7): 허용값. 없으면 기본(가로 흐름)
-const PROCESS_LAYOUTS = ['stairs'];
+const PROCESS_LAYOUTS = ['stairs', 'comparison'];
+// process comparison (v1.18): sections [AS-IS, TO-BE]
+const REDESIGN_SECTIONS = 2;
+const REDESIGN_VARIANTS = ['as-is', 'to-be'];
+const REDESIGN_STEPS_RANGE = { min: 3, max: 5 };
+const REDESIGN_LIMITS = { label: 8, title: 24, step: 12, caption: 40, stepLabel: 12, ai: 28, human: 24 };
+const REDESIGN_ROLES = [['ai', 'AI'], ['human', '사람']];
+const REDESIGN_FLOW_ARROW = '→';
+// 순환 화살표 기하(캔버스 px). 색·굵기는 CSS(.redesign__loop-path, .redesign__loop marker path)가 지정한다.
+const REDESIGN_LOOP = { arrowSize: 16, arrowGap: 4, radius: 16, minDrop: 24, bottomPad: 12 };
 
 // equation (v1.7): term (op term)… = result
 const EQUATION_TERMS_RANGE = { min: 2, max: 3 };
@@ -223,6 +232,11 @@ const COLUMN_TONES = ['default', 'accent', 'danger'];
 const COMPARISON_MARKS = ['good', 'bad', 'warn'];
 const COMPARISON_WIDE_COLUMNS = 4; // 이 열 수 이상이면 셀 글자 제한이 줄어든다
 const COMPARISON_CELL_LIMIT = { normal: 32, wide: 20 };
+// comparison 레이아웃 (v1.17): 허용값. 없으면 기본(표)
+const COMPARISON_LAYOUTS = ['roadmap'];
+const ROADMAP_COLUMNS_RANGE = { min: 3, max: 4 };
+const ROADMAP_ROWS_RANGE = { min: 2, max: 5 };
+const ROADMAP_CELL_LIMIT = { normal: 40, wide: 26 }; // 열 3개 / 4개
 
 // cover 대표 이미지 (v1.3): 허용값 목록, 첫 값이 기본값
 const COVER_IMAGE_STYLES = ['full', 'split'];
@@ -761,8 +775,12 @@ function processLayout(data) {
 }
 
 function renderProcess(data, root) {
-  const steps = Array.isArray(data.steps) ? data.steps : [];
   const layout = processLayout(data);
+  if (layout === 'comparison') {
+    renderProcessComparison(data, root);
+    return;
+  }
+  const steps = Array.isArray(data.steps) ? data.steps : [];
   root.dataset.count = String(steps.length);
   if (layout) root.dataset.layout = layout;
   root.appendChild(titleEl(data.title));
@@ -782,6 +800,102 @@ function renderProcess(data, root) {
   if (gates) root.dataset.gates = String(gates);
   body.appendChild(list);
   appendIf(body, data.caption, (v) => textEl('p', 'slide__caption', v));
+  root.appendChild(body);
+}
+
+/* process comparison (v1.18): AS-IS 흐름 → 구분선 → TO-BE 카드 + 순환 화살표 ---- */
+
+function redesignArray(value) {
+  return Array.isArray(value) ? value : [];
+}
+
+function redesignSections(data) {
+  const sections = Array.isArray(data.sections) ? data.sections : [];
+  return REDESIGN_VARIANTS.map((_, i) => objectOr(sections[i]));
+}
+
+function redesignHeadEl(section) {
+  const head = el('div', 'redesign__head');
+  appendIf(head, section.label, (v) => textEl('span', 'redesign__label', v));
+  appendIf(head, section.title, (v) => textEl('h3', 'redesign__title', v));
+  return head;
+}
+
+function redesignFlowArrowEl() {
+  const li = el('li', 'redesign__flow-arrow');
+  li.setAttribute('aria-hidden', 'true');
+  li.textContent = REDESIGN_FLOW_ARROW;
+  return li;
+}
+
+// 항목 사이에 화살표 li를 끼운 ol. data-count는 단계 수(화살표 제외).
+function redesignStepsEl(items, stepFactory) {
+  const list = el('ol', 'redesign__steps');
+  list.dataset.count = String(items.length);
+  items.forEach((item, i) => {
+    if (i > 0) list.appendChild(redesignFlowArrowEl());
+    list.appendChild(stepFactory(item, i));
+  });
+  return list;
+}
+
+function redesignAsIsStepEl(step) {
+  const li = el('li', 'redesign__step');
+  li.appendChild(textEl('span', 'redesign__step-label', step == null ? '' : String(step)));
+  return li;
+}
+
+function redesignRoleEl(role, tag, text) {
+  const node = el('div', 'redesign__role');
+  node.dataset.role = role;
+  const tagEl = el('span', 'redesign__role-tag');
+  tagEl.textContent = tag;
+  node.appendChild(tagEl);
+  node.appendChild(textEl('p', 'redesign__role-text', text ?? ''));
+  return node;
+}
+
+function redesignToBeStepEl(step, index) {
+  const data = objectOr(step);
+  const li = el('li', 'redesign__step');
+  li.dataset.index = String(index);
+  li.appendChild(textEl('p', 'redesign__step-label', data.label ?? ''));
+  REDESIGN_ROLES.forEach(([role, tag]) => li.appendChild(redesignRoleEl(role, tag, data[role])));
+  return li;
+}
+
+function redesignSectionEl(section, variant) {
+  const node = el('section', 'redesign__section');
+  node.dataset.variant = variant;
+  node.appendChild(redesignHeadEl(section));
+  return node;
+}
+
+function redesignAsIsEl(section) {
+  const node = redesignSectionEl(section, 'as-is');
+  node.appendChild(redesignStepsEl(redesignArray(section.steps), redesignAsIsStepEl));
+  appendIf(node, section.caption, (v) => textEl('p', 'redesign__caption', v));
+  return node;
+}
+
+function redesignToBeEl(section, slideId) {
+  const node = redesignSectionEl(section, 'to-be');
+  node.appendChild(redesignStepsEl(redesignArray(section.steps), redesignToBeStepEl));
+  node.appendChild(redesignLoopEl(slideId));
+  return node;
+}
+
+function renderProcessComparison(data, root) {
+  const [asIs, toBe] = redesignSections(data);
+  root.dataset.layout = 'comparison';
+  root.appendChild(titleEl(data.title));
+  const body = bodyEl();
+  const wrap = el('div', 'slide__redesign');
+  wrap.appendChild(redesignAsIsEl(asIs));
+  wrap.appendChild(el('hr', 'redesign__divider'));
+  wrap.appendChild(redesignToBeEl(toBe, data.id));
+  appendIf(wrap, toBe.caption, (v) => textEl('p', 'redesign__message', v));
+  body.appendChild(wrap);
   root.appendChild(body);
 }
 
@@ -1123,13 +1237,36 @@ function highlightClass(base, index, highlight) {
   return index === highlight ? `${base} is-highlight` : base;
 }
 
-function comparisonHeadEl(columns, highlight) {
+// "이름 (기간)" → { name, period }. 끝 괄호가 없으면 period는 null.
+function splitColumnPeriod(text) {
+  const match = /^(.*?)\s*\(([^()]*)\)\s*$/.exec(text);
+  return match ? { name: match[1], period: match[2] } : { name: text, period: null };
+}
+
+// roadmap 열 머리글: div.colhead__card > step · name · period (v1.19)
+function roadmapColheadEl(col, index, highlight) {
+  const text = col == null ? '' : String(col);
+  const { name, period } = splitColumnPeriod(text);
+  const th = el('th', highlightClass('table__colhead', index, highlight));
+  th.setAttribute('aria-label', text.replace(/\*\*/g, '').replace(/\n/g, ' '));
+  const card = el('div', 'colhead__card');
+  card.appendChild(textEl('span', 'colhead__step', `STEP ${index + 1}`));
+  card.appendChild(textEl('span', 'colhead__name', name));
+  if (!isMissing(period)) card.appendChild(textEl('span', 'colhead__period', period));
+  th.appendChild(card);
+  return th;
+}
+
+function comparisonHeadEl(columns, highlight, isRoadmap) {
   const thead = el('thead');
   const tr = el('tr');
   tr.appendChild(el('th', 'table__corner'));
   columns.forEach((col, i) => {
-    const th = textEl('th', highlightClass('table__colhead', i, highlight), col);
+    const th = isRoadmap
+      ? roadmapColheadEl(col, i, highlight)
+      : textEl('th', highlightClass('table__colhead', i, highlight), col);
     th.scope = 'col';
+    th.dataset.index = String(i);
     tr.appendChild(th);
   });
   thead.appendChild(tr);
@@ -1163,10 +1300,11 @@ function renderComparison(data, root) {
   const highlightRow = Number.isInteger(data.highlightRow) ? data.highlightRow : -1;
   root.dataset.cols = String(columns.length);
   root.dataset.rows = String(rows.length);
+  if (COMPARISON_LAYOUTS.includes(data.layout)) root.dataset.layout = data.layout;
   root.appendChild(titleEl(data.title));
   const body = bodyEl();
   const table = el('table', 'slide__table');
-  table.appendChild(comparisonHeadEl(columns, highlight));
+  table.appendChild(comparisonHeadEl(columns, highlight, data.layout === 'roadmap'));
   const tbody = el('tbody');
   rows.forEach((row, r) => tbody.appendChild(comparisonRowEl(row, r, columns.length, highlight, highlightRow)));
   table.appendChild(tbody);
@@ -1547,8 +1685,10 @@ function drawTreeLines(tree) {
   return true;
 }
 
+// 측정 기반 연결선(tree 선, process comparison 순환 화살표)을 함께 다시 그린다.
 function drawTreesIn(scope) {
   scope?.querySelectorAll('.slide__tree').forEach(drawTreeLines);
+  drawRedesignLoopsIn(scope);
 }
 
 let treeFrame = 0;
@@ -1566,6 +1706,99 @@ function observeTrees() {
     trees.forEach((tree) => {
       observer.observe(tree);
       tree.querySelectorAll('.tree__root, .tree__node, .tree__leaf').forEach((n) => observer.observe(n));
+    });
+  }
+  document.fonts?.ready.then(scheduleTreeLines);
+  scheduleTreeLines();
+}
+
+/* process comparison 순환 화살표: 마지막 카드 하단 → 아래 → 왼쪽 → 첫 카드 하단 --- */
+
+function redesignArrowId(slideId) {
+  return `redesign-arrow-${slideId}`;
+}
+
+function redesignLoopEl(slideId) {
+  const svg = svgEl('svg', 'redesign__loop', { 'aria-hidden': 'true', focusable: 'false' });
+  const defs = svgEl('defs');
+  const s = REDESIGN_LOOP.arrowSize;
+  const marker = svgEl('marker', null, {
+    id: redesignArrowId(slideId),
+    viewBox: `0 0 ${s} ${s}`,
+    refX: s, refY: s / 2,
+    markerWidth: s, markerHeight: s,
+    markerUnits: 'userSpaceOnUse', orient: 'auto',
+  });
+  marker.appendChild(svgEl('path', null, { d: `M0 0 L${s} ${s / 2} L0 ${s} Z` }));
+  defs.appendChild(marker);
+  svg.appendChild(defs);
+  svg.appendChild(svgEl('path', 'redesign__loop-path', { 'marker-end': `url(#${redesignArrowId(slideId)})` }));
+  return svg;
+}
+
+// svg는 HTMLElement가 아니라 offsetLeft가 없다. section 대비 위치를 rect 차이 ÷ 실효 배율로 구한다.
+function svgOffsetWithin(svg, section) {
+  const sRect = section.getBoundingClientRect();
+  const vRect = svg.getBoundingClientRect();
+  const k = section.offsetWidth ? sRect.width / section.offsetWidth : 0;
+  if (!k) return null;
+  return { x: (vRect.left - sRect.left) / k, y: (vRect.top - sRect.top) / k };
+}
+
+// 카드 좌표(section 기준, offset 체인 → 뷰어 scale 무관)를 svg 좌표로 옮긴다.
+function redesignCardAnchor(card, section, origin) {
+  const { x, y } = offsetWithin(card, section);
+  return { x: x + card.offsetWidth / 2 - origin.x, y: y + card.offsetHeight - origin.y };
+}
+
+function redesignLoopPath(first, last, height) {
+  const { arrowGap, radius, minDrop, bottomPad } = REDESIGN_LOOP;
+  const top = Math.max(0, Math.max(first.y, last.y));
+  const bottom = Math.max(top + minDrop, height - bottomPad);
+  const r = Math.min(radius, (bottom - top) / 2, Math.abs(last.x - first.x) / 2);
+  return [
+    `M${round1(last.x)} ${round1(Math.max(0, last.y))}`,
+    `V${round1(bottom - r)}`,
+    `Q${round1(last.x)} ${round1(bottom)} ${round1(last.x - r)} ${round1(bottom)}`,
+    `H${round1(first.x + r)}`,
+    `Q${round1(first.x)} ${round1(bottom)} ${round1(first.x)} ${round1(bottom - r)}`,
+    `V${round1(Math.max(0, first.y) + arrowGap)}`,
+  ].join(' ');
+}
+
+function round1(n) {
+  return Math.round(n * 10) / 10;
+}
+
+// 측정 불가(숨김 등 크기 0)면 기존 경로를 유지하고 false.
+function drawRedesignLoop(section) {
+  const svg = section.querySelector('.redesign__loop');
+  const path = svg?.querySelector('.redesign__loop-path');
+  const cards = section.querySelectorAll('.redesign__steps > .redesign__step');
+  if (!path || cards.length < 2 || !section.offsetWidth) return false;
+  const width = svg.clientWidth;
+  const height = svg.clientHeight;
+  const origin = svgOffsetWithin(svg, section);
+  if (!width || !height || !origin) return false;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+  const first = redesignCardAnchor(cards[0], section, origin);
+  const last = redesignCardAnchor(cards[cards.length - 1], section, origin);
+  path.setAttribute('d', redesignLoopPath(first, last, height));
+  return true;
+}
+
+function drawRedesignLoopsIn(scope) {
+  scope?.querySelectorAll('.redesign__section[data-variant="to-be"]').forEach(drawRedesignLoop);
+}
+
+function observeRedesignLoops() {
+  const sections = dom.deck.querySelectorAll('.redesign__section[data-variant="to-be"]');
+  if (!sections.length) return;
+  if (typeof ResizeObserver === 'function') {
+    const observer = new ResizeObserver(scheduleTreeLines);
+    sections.forEach((section) => {
+      observer.observe(section);
+      section.querySelectorAll('.redesign__step, .redesign__loop').forEach((n) => observer.observe(n));
     });
   }
   document.fonts?.ready.then(scheduleTreeLines);
@@ -2443,7 +2676,60 @@ function warnArrayField(slide, label, field) {
   return Array.isArray(slide[field]);
 }
 
+function validateRedesignHead(section, name) {
+  const L = REDESIGN_LIMITS;
+  if (isMissing(section.label)) console.warn(`[slides] ${name}: 필수 필드 "label" 누락`);
+  if (isMissing(section.title)) console.warn(`[slides] ${name}: 필수 필드 "title" 누락`);
+  warnTextLimits(section, name, [['label', L.label], ['title', L.title], ['caption', L.caption]]);
+}
+
+function validateRedesignAsIs(section, name) {
+  const steps = warnArrayField(section, name, 'steps') ? section.steps : [];
+  warnRange(name, 'steps', steps.length, REDESIGN_STEPS_RANGE);
+  steps.forEach((step, i) => {
+    if (typeof step !== 'string' || !step.trim()) {
+      console.warn(`[slides] ${name}: steps[${i}] — AS-IS 단계는 비어 있지 않은 문자열이어야 합니다.`);
+    } else if (step.length > REDESIGN_LIMITS.step) {
+      console.warn(`[slides] ${name}: steps[${i}] ${step.length}자 — ${REDESIGN_LIMITS.step}자 이내여야 합니다.`);
+    }
+  });
+}
+
+function validateRedesignToBe(section, name) {
+  const L = REDESIGN_LIMITS;
+  const steps = warnArrayField(section, name, 'steps') ? section.steps : [];
+  warnRange(name, 'steps', steps.length, REDESIGN_STEPS_RANGE);
+  steps.forEach((step, i) => {
+    const stepName = `${name} steps[${i}]`;
+    if (!step || typeof step !== 'object') {
+      console.warn(`[slides] ${stepName}: TO-BE 단계는 { label, ai, human } 객체여야 합니다.`);
+      return;
+    }
+    ['label', 'ai', 'human'].filter((f) => isMissing(step[f]))
+      .forEach((f) => console.warn(`[slides] ${stepName}: 필수 필드 "${f}" 누락`));
+    warnTextLimits(step, stepName, [['label', L.stepLabel], ['ai', L.ai], ['human', L.human]]);
+  });
+}
+
+function validateProcessComparison(slide, label) {
+  if (!isMissing(slide.steps)) console.warn(`[slides] ${label}: layout "comparison"은 steps 대신 sections를 씁니다 — steps는 무시합니다.`);
+  if (!isMissing(slide.caption)) console.warn(`[slides] ${label}: layout "comparison"은 caption 대신 sections[].caption을 씁니다 — 표시하지 않습니다.`);
+  const sections = warnArrayField(slide, label, 'sections') ? slide.sections : [];
+  if (sections.length !== REDESIGN_SECTIONS) {
+    console.warn(`[slides] ${label}: sections ${sections.length}개 — 정확히 ${REDESIGN_SECTIONS}개([AS-IS, TO-BE])여야 합니다.`);
+  }
+  const [asIs, toBe] = redesignSections(slide);
+  validateRedesignHead(asIs, `${label} sections[0]`);
+  validateRedesignAsIs(asIs, `${label} sections[0]`);
+  validateRedesignHead(toBe, `${label} sections[1]`);
+  validateRedesignToBe(toBe, `${label} sections[1]`);
+}
+
 function validateProcess(slide, label) {
+  if (isProcessComparison(slide)) {
+    validateProcessComparison(slide, label);
+    return;
+  }
   (Array.isArray(slide.steps) ? slide.steps : []).forEach((step, i) => {
     const data = step && typeof step === 'object' ? step : {};
     if (isMissing(data.label)) console.warn(`[slides] ${label}: steps[${i}] 필수 필드 "label" 누락`);
@@ -2656,9 +2942,11 @@ function validateComparison(slide, label) {
   columns.forEach((col, i) => {
     if (typeof col === 'string' && col.length > 20) console.warn(`[slides] ${label}: columns[${i}] ${col.length}자 — 20자 이내여야 합니다.`);
   });
+  const isRoadmap = validateComparisonLayout(slide, label);
+  if (isRoadmap) warnRange(label, 'columns', columns.length, ROADMAP_COLUMNS_RANGE);
   if (!warnArrayField(slide, label, 'rows')) return;
-  warnRange(label, 'rows', slide.rows.length, COMPARISON_ROWS_RANGE);
-  const cellLimit = columns.length >= COMPARISON_WIDE_COLUMNS ? COMPARISON_CELL_LIMIT.wide : COMPARISON_CELL_LIMIT.normal;
+  warnRange(label, 'rows', slide.rows.length, isRoadmap ? ROADMAP_ROWS_RANGE : COMPARISON_ROWS_RANGE);
+  const cellLimit = comparisonCellLimit(columns.length, isRoadmap);
   slide.rows.forEach((row, i) => {
     const data = row && typeof row === 'object' ? row : {};
     if (isMissing(data.label)) console.warn(`[slides] ${label}: rows[${i}] 필수 필드 "label" 누락`);
@@ -2674,6 +2962,21 @@ function validateComparison(slide, label) {
   });
   warnIndex(label, 'highlight', slide.highlight, columns.length);
   warnIndex(label, 'highlightRow', slide.highlightRow, slide.rows.length);
+}
+
+// layout이 허용값이면 roadmap 여부를 돌려준다. 알 수 없는 값은 경고 후 기본 표로 취급.
+function validateComparisonLayout(slide, label) {
+  if (slide.layout == null) return false;
+  if (!COMPARISON_LAYOUTS.includes(slide.layout)) {
+    console.warn(`[slides] ${label}: layout ${JSON.stringify(slide.layout)} — ${COMPARISON_LAYOUTS.join(' | ')}만 허용합니다. 기본 표로 표시합니다.`);
+    return false;
+  }
+  return slide.layout === 'roadmap';
+}
+
+function comparisonCellLimit(columnCount, isRoadmap) {
+  const limits = isRoadmap ? ROADMAP_CELL_LIMIT : COMPARISON_CELL_LIMIT;
+  return columnCount >= COMPARISON_WIDE_COLUMNS ? limits.wide : limits.normal;
 }
 
 function warnIndex(label, name, value, length) {
@@ -3190,11 +3493,21 @@ function commonTextLimits(type) {
   return TEXT_LIMITS.common.map(([field, max]) => [field, overrides[field] ?? max]);
 }
 
+// process comparison(v1.18)은 steps 대신 sections를 쓴다(개수·내용은 validateProcessComparison).
+function isProcessComparison(slide) {
+  return slide.type === 'process' && slide.layout === 'comparison';
+}
+
+function requiredFieldsOf(slide) {
+  const fields = REQUIRED_FIELDS[slide.type];
+  return isProcessComparison(slide) ? fields.filter((f) => f !== 'steps').concat('sections') : fields;
+}
+
 function validateTypeFields(slide, label) {
-  REQUIRED_FIELDS[slide.type]
+  requiredFieldsOf(slide)
     .filter((field) => isMissing(slide[field]))
     .forEach((field) => console.warn(`[slides] ${label}: 필수 필드 "${field}" 누락`));
-  const count = COUNT_LIMITS[slide.type];
+  const count = isProcessComparison(slide) ? null : COUNT_LIMITS[slide.type];
   if (count && warnArrayField(slide, label, count.field)) warnRange(label, count.field, slide[count.field].length, count);
   warnTextLimits(slide, label, TEXT_LIMITS[slide.type]);
   TYPE_VALIDATORS[slide.type]?.(slide, label);
@@ -3520,6 +3833,7 @@ async function init() {
     applyScale();
     goTo(indexFromHash());
     observeTrees();
+    observeRedesignLoops();
     measureBaselineTagsIn(dom.deck);
     document.fonts?.ready.then(() => measureBaselineTagsIn(dom.deck)); // 웹폰트 적용 후 폭 재측정
   } catch (error) {
